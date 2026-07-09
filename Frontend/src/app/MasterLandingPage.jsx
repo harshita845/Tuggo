@@ -105,7 +105,7 @@ const FeatureRowRight = ({ title, desc, Icon, delay = 0 }) => (
 const SLIDES = [
   {
     id: 1,
-    image: "https://imgs.search.brave.com/kIcb6MhCPlZRyadtSs3RA8YRS0_gVuwmXaadnDR50qk/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWcu/bWFnbmlmaWMuY29t/L3ByZW1pdW0tcGhv/dG8vY2hlZi1zZXJ2/aW5nLWRpc2gtc3Rl/YW1lZC1mb29kLXdp/dGgtZm9ya18xMzUz/MjQ0LTIyMzkxLmpw/Zz9zZW10PWFpc19o/eWJyaWQmdz03NDAm/cT04MA",
+    image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop",
     title: "Tuggo Food Delivery",
     subtitle: "Giving you the best service and all"
   },
@@ -117,7 +117,7 @@ const SLIDES = [
   },
   {
     id: 3,
-    image: "https://imgs.search.brave.com/2bZ2bQHFZyIX3VGaUH-pJljecOdn0jb37I7zQZhhFv0/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvODg4/OTk0OTYyL3Bob3Rv/L2Nsb3NlLXVwLW9m/LWZhc3QtZm9vZC1v/bi10YWJsZS5qcGc_/cz02MTJ4NjEyJnc9/MCZrPTIwJmM9dGt5/c0daOFl1VURtNWkt/VTgzWWtqaUc2V2lR/TFRpWmEyZlVsc1JT/VnVhaz0",
+    image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=2070&auto=format&fit=crop",
     title: "Tradition & Passion",
     subtitle: "Only the best ingredients for our dishes"
   }

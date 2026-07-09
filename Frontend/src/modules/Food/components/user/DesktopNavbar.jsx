@@ -14,6 +14,7 @@ import quickSpicyLogo from "@food/assets/quicky-spicy-logo.png"
 import { getCachedSettings, loadBusinessSettings } from "@food/utils/businessSettings"
 import { getPublicLandingSettings } from "@food/api"
 import { useAppLocation } from "@food/hooks/useAppLocation"
+import { useAppLogo } from "@food/hooks/useAppLogo"
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
@@ -29,14 +30,13 @@ export default function DesktopNavbar({ showLogo = true }) {
     const { vegMode, setVegMode } = useProfile()
     const { zoneId } = useAppLocation()
     const [heroSearch, setHeroSearch] = useState("")
-    const [logoUrl, setLogoUrl] = useState(null)
+    const logoUrl = useAppLogo('user_app')
     const [companyName, setCompanyName] = useState(null)
     const [hasScrolledPastBanner, setHasScrolledPastBanner] = useState(false)
     const [under250PriceLimit, setUnder250PriceLimit] = useState(250)
     const [showDining, setShowDining] = useState(true)
     const navRef = useRef(null)
     const cartCount = getCartCount()
-
 
     // Show area if available, otherwise show city
     const areaName = userLocation?.area && userLocation?.area.trim() ? userLocation.area.trim() : null
@@ -86,45 +86,30 @@ export default function DesktopNavbar({ showLogo = true }) {
         location.pathname === "/food/user/under-250" ||
         location.pathname === "/food/under-250"
 
-    // Load business settings logo
+    // Load business settings company name
     useEffect(() => {
-        const loadLogo = async () => {
+        const loadName = async () => {
             try {
                 const cached = getCachedSettings()
-                if (cached) {
-                    if (cached.logo?.url) {
-                        setLogoUrl(cached.logo.url)
-                    }
-                    if (cached.companyName) {
-                        setCompanyName(cached.companyName)
-                    }
+                if (cached?.companyName) {
+                    setCompanyName(cached.companyName)
                 } else {
                     const settings = await loadBusinessSettings()
-                    if (settings) {
-                        if (settings.logo?.url) {
-                            setLogoUrl(settings.logo.url)
-                        }
-                        if (settings.companyName) {
-                            setCompanyName(settings.companyName)
-                        }
+                    if (settings?.companyName) {
+                        setCompanyName(settings.companyName)
                     }
                 }
             } catch (error) {
-                debugError('Error loading logo:', error)
+                debugError('Error loading company name:', error)
             }
         }
-        loadLogo()
+        loadName()
 
         // Listen for business settings updates
         const handleSettingsUpdate = () => {
             const cached = getCachedSettings()
-            if (cached) {
-                if (cached.logo?.url) {
-                    setLogoUrl(cached.logo.url)
-                }
-                if (cached.companyName) {
-                    setCompanyName(cached.companyName)
-                }
+            if (cached?.companyName) {
+                setCompanyName(cached.companyName)
             }
         }
         window.addEventListener('businessSettingsUpdated', handleSettingsUpdate)
@@ -193,11 +178,11 @@ export default function DesktopNavbar({ showLogo = true }) {
             ref={navRef}
             className={`hidden md:flex flex-col fixed top-0 left-0 right-0 z-50 py-2 transition-all duration-300 ${(isBannerRoute && !hasScrolledPastBanner)
                 ? "bg-transparent !bg-transparent border-0 shadow-none"
-                : "bg-white dark:bg-[#1a1a1a] border-b border-gray-200 dark:border-gray-800 shadow-sm"
+                : "bg-background border-b border-border shadow-sm"
                 }`}
         >
             {/* Top Row: Location - Search - Icons */}
-            <div className={`w-full ${(isBannerRoute && !hasScrolledPastBanner) ? "border-b border-transparent" : "border-b border-gray-100 dark:border-gray-800"}`}>
+            <div className={`w-full ${(isBannerRoute && !hasScrolledPastBanner) ? "border-b border-transparent" : "border-b border-border"}`}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-16 gap-4">
                         {/* Left: Logo & Location */}
@@ -263,9 +248,9 @@ export default function DesktopNavbar({ showLogo = true }) {
                         <div className="flex-1 max-w-3xl mx-4 flex items-center gap-4">
                             {/* Search Bar */}
                             <div className="relative flex-1">
-                                <div className="relative bg-gray-100 dark:bg-[#2a2a2a] rounded-lg transition-all duration-300 focus-within:ring-2 focus-within:ring-primary focus-within:bg-white dark:focus-within:bg-[#1a1a1a] border border-transparent focus-within:border-primary/20">
+                                <div className="relative bg-muted rounded-lg transition-all duration-300 focus-within:ring-2 focus-within:ring-primary focus-within:bg-background border border-transparent focus-within:border-primary/20">
                                     <div className="flex items-center px-3 py-2">
-                                        <Search className="h-4 w-4 text-gray-500 flex-shrink-0 mr-3" />
+                                        <Search className="h-4 w-4 text-muted-foreground flex-shrink-0 mr-3" />
                                         <Input
                                             value={heroSearch}
                                             onChange={(e) => {
@@ -344,7 +329,7 @@ export default function DesktopNavbar({ showLogo = true }) {
             </div>
 
             {/* Bottom Row: Navigation Tabs & Veg Mode */}
-            <div className={`w-full pb-3 ${(isBannerRoute && !hasScrolledPastBanner) ? "bg-transparent !bg-transparent" : "bg-white dark:bg-[#1a1a1a]"}`}>
+            <div className={`w-full pb-3 ${(isBannerRoute && !hasScrolledPastBanner) ? "bg-transparent !bg-transparent" : "bg-background"}`}>
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-center h-12">
                         {/* Navigation Tabs - Centered with spacing */}

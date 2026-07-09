@@ -77,15 +77,15 @@ const AppRoutes = () => {
   return (
     <Routes>
       {/* Auth Module */}
-      <Route path="/user/auth/*" element={<AuthApp />} />
-      <Route path="/delivery/auth/*" element={<AuthApp />} />
-      <Route path="/restaurant/auth/*" element={<AuthApp />} />
+      <Route path="/user/auth/*" element={<Suspense fallback={<PageLoader />}><AuthApp /></Suspense>} />
+      <Route path="/delivery/auth/*" element={<Suspense fallback={<PageLoader />}><AuthApp /></Suspense>} />
+      <Route path="/restaurant/auth/*" element={<Suspense fallback={<PageLoader />}><AuthApp /></Suspense>} />
 
       {/* Food Module - Handle both /food and root / for the user app */}
       <Route path="/food/*" element={<FoodAppWrapper />} />
 
       {/* Global Admin Portal - AdminRouter handles its own protection for sub-routes */}
-      <Route path="/admin/*" element={<AdminRouter />} />
+      <Route path="/admin/*" element={<Suspense fallback={<PageLoader />}><AdminRouter /></Suspense>} />
 
       {/* Handle root and other paths via FoodAppWrapper */}
       <Route path="/" element={

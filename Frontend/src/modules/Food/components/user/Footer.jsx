@@ -3,45 +3,12 @@ import { Facebook, Twitter, Instagram, Mail, Phone, MapPin, Heart } from "lucide
 import { useState, useEffect } from "react"
 import { getCachedSettings, loadBusinessSettings } from "@food/utils/businessSettings"
 import { useCompanyName } from "@food/hooks/useCompanyName"
+import { useAppLogo } from "@food/hooks/useAppLogo"
 import quickSpicyLogo from "@food/assets/quicky-spicy-logo.png"
-
 export default function Footer() {
   const companyName = useCompanyName()
   const currentYear = new Date().getFullYear()
-  const [logoUrl, setLogoUrl] = useState(quickSpicyLogo)
-
-  // Load business settings logo
-  useEffect(() => {
-    const loadLogo = async () => {
-      try {
-        const cached = getCachedSettings()
-        if (cached?.logo?.url) {
-          setLogoUrl(cached.logo.url)
-        } else {
-          const settings = await loadBusinessSettings()
-          if (settings?.logo?.url) {
-            setLogoUrl(settings.logo.url)
-          }
-        }
-      } catch (error) {
-        // Silently fail, use default logo
-      }
-    }
-    loadLogo()
-
-    // Listen for business settings updates
-    const handleSettingsUpdate = () => {
-      const cached = getCachedSettings()
-      if (cached?.logo?.url) {
-        setLogoUrl(cached.logo.url)
-      }
-    }
-    window.addEventListener('businessSettingsUpdated', handleSettingsUpdate)
-
-    return () => {
-      window.removeEventListener('businessSettingsUpdated', handleSettingsUpdate)
-    }
-  }, [])
+  const logoUrl = useAppLogo('user_app')
 
   const footerLinks = {
     company: [

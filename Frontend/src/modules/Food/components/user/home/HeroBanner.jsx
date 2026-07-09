@@ -161,7 +161,14 @@ export default function HeroBanner({
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
+        onMouseEnter={() => {
+          if (autoSlideIntervalRef.current) clearInterval(autoSlideIntervalRef.current);
+        }}
+        onMouseLeave={() => {
+          handleMouseUp();
+          resetAutoSlide();
+        }}
+        onTouchCancel={resetAutoSlide}
       >
         <div className="relative z-0 w-full min-h-[180px] sm:min-h-[220px] lg:min-h-[260px] flex items-center justify-center bg-gray-50 dark:bg-[#111]">
           <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">

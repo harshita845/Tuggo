@@ -96,21 +96,21 @@ const foodLandingSettingsSchema = new mongoose.Schema(
                 {
                     id: 1,
                     type: 'image',
-                    image: "https://imgs.search.brave.com/M6LwR711rO-G0_jYd0Z9oPoxxK-a34nZgI1_5qU6Rzw/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9pbWcu/ZnJlZXBpay5jb20v/ZnJlZS1waG90by9o/YW1idXJnZXItd2l0/aC1iZWVmLWNoZWVz/ZV8xNDQ2MjctNjQy/NS5qcGc_c2l6ZT02/MjYmZXh0PWpwZw",
+                    image: "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=2070&auto=format&fit=crop",
                     title: "Master Chef",
                     subtitle: "Experience the art of fine dining"
                 },
                 {
                     id: 2,
                     type: 'image',
-                    image: "https://imgs.search.brave.com/hIq0w1x2X2gJzYv1fXQn41hU7lqP-t1sO62m7pX5B_I/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTA4/MTQyMjg5OC9waG90/by9wYW4tZnJpZWQt/ZHVjay5qcGc_cz02/MTJ4NjEyJnc9MCZr/PTIwJmM9eUhMck1N/RndqUkpSM1JOS3ZN/MmV1OWR4OW1YNUZH/amRjOVRlWGd2YTBx/RT0",
+                    image: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?q=80&w=2070&auto=format&fit=crop",
                     title: "Exquisite Taste",
                     subtitle: "High-class Professional Service"
                 },
                 {
                     id: 3,
                     type: 'image',
-                    image: "https://imgs.search.brave.com/2bZ2bQHFZyIX3VGaUH-pJljecOdn0jb37I7zQZhhFv0/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvODg4/OTk0OTYyL3Bob3Rv/L2Nsb3NlLXVwLW9m/LWZhc3QtZm9vZC1v/bi10YWJsZS5qcGc_/cz02MTJ4NjEyJnc9/MCZrPTIwJmM9dGt5/c0daOFl1VURtNWkt/VTgzWWtqaUc2V2lR/TFRpWmEyZlVsc1JT/VnVhaz0",
+                    image: "https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=2070&auto=format&fit=crop",
                     title: "Tradition & Passion",
                     subtitle: "Only the best ingredients for our dishes"
                 }

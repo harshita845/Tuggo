@@ -19,8 +19,13 @@ import('./modules/Food/utils/themeSettings.js')
   .then(({ applyDynamicTheme }) => applyDynamicTheme())
   .catch(() => { /* Silently fail */ })
 
-// Apply saved theme
-const savedTheme = localStorage.getItem('appTheme') || 'light'
+// Apply saved theme (Default to dark for User App)
+const isUserApp = !window.location.pathname.includes('/admin') && !window.location.pathname.includes('/restaurant') && !window.location.pathname.includes('/delivery');
+if (isUserApp) {
+  document.documentElement.classList.add('user-app');
+}
+const defaultTheme = isUserApp ? 'dark' : 'light';
+const savedTheme = localStorage.getItem('appTheme') || defaultTheme;
 if (savedTheme === 'dark') {
   document.documentElement.classList.add('dark')
 } else {

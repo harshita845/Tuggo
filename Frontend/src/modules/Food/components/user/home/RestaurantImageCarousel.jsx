@@ -1,5 +1,6 @@
-﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
+import { foodImages } from "@food/constants/images";
 
 const WEBVIEW_SESSION_CACHE_BUSTER = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
 
@@ -74,10 +75,34 @@ const RestaurantImageCarousel = React.memo(
     );
 
     const images = useMemo(() => {
-      const sourceImages =
-        Array.isArray(restaurant.images) && restaurant.images.length > 0
-          ? restaurant.images
-          : [restaurant.image];
+      let foodImage = null;
+      const allItems = [];
+      if (restaurant.menu?.sections && Array.isArray(restaurant.menu.sections)) {
+        restaurant.menu.sections.forEach(sec => {
+          if (Array.isArray(sec.items)) allItems.push(...sec.items);
+        });
+      }
+      if (Array.isArray(restaurant.popularItems)) allItems.push(...restaurant.popularItems);
+      if (Array.isArray(restaurant.menuItems)) allItems.push(...restaurant.menuItems);
+      if (Array.isArray(restaurant.itemDiscounts)) allItems.push(...restaurant.itemDiscounts);
+
+      const itemWithImage = allItems.find(item => item.image && typeof item.image === 'string' && item.image.trim().length > 0);
+      if (itemWithImage) {
+        foodImage = itemWithImage.image;
+      }
+
+      let sourceImages = [];
+      if (foodImage) {
+         sourceImages = [foodImage];
+      } else if (Array.isArray(restaurant.images) && restaurant.images.length > 0) {
+         sourceImages = restaurant.images;
+      } else if (restaurant.coverImages && Array.isArray(restaurant.coverImages) && restaurant.coverImages.length > 0) {
+         sourceImages = restaurant.coverImages;
+      } else if (restaurant.image) {
+         sourceImages = [restaurant.image];
+      } else {
+         sourceImages = [foodImages[0]];
+      }
 
       const validImages = sourceImages
         .filter((img) => typeof img === "string")

@@ -609,6 +609,7 @@ export default function Home() {
   const [activeFilters, setActiveFilters] = useState(new Set());
   const [sortBy, setSortBy] = useState(null); // null, 'price-low', 'price-high', 'rating-high', 'rating-low'
   const [selectedCuisine, setSelectedCuisine] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("All");
   const [isFilterOpen, setIsFilterOpen] = useState(false);
   const [appliedFilters, setAppliedFilters] = useState({
     activeFilters: new Set(),
@@ -1798,12 +1799,30 @@ export default function Home() {
     [vegMode, vegModeOption],
   );
 
+  const matchesCategory = useCallback(
+    (restaurant) => {
+      if (selectedCategory === "All") return true;
+      const cuisines = restaurant.cuisines || [];
+      if (cuisines.some(c => c.toLowerCase() === selectedCategory.toLowerCase())) return true;
+      
+      const allItems = [];
+      if (restaurant.menuItems) allItems.push(...restaurant.menuItems);
+      if (restaurant.popularItems) allItems.push(...restaurant.popularItems);
+      if (restaurant.itemDiscounts) allItems.push(...restaurant.itemDiscounts);
+      
+      return allItems.some(item => 
+        item.category && item.category.toLowerCase() === selectedCategory.toLowerCase()
+      );
+    },
+    [selectedCategory]
+  );
+
   // Filter restaurants and foods based on active filters
   const filteredRestaurants = useMemo(() => {
     // Rely on API data which is already filtered and sorted by the backend.
-    // We only apply client-side Veg Mode filtering here.
-    return (restaurantsData || []).filter(matchesVegMode);
-  }, [restaurantsData, matchesVegMode]);
+    // We only apply client-side Veg Mode and Category filtering here.
+    return (restaurantsData || []).filter(matchesVegMode).filter(matchesCategory);
+  }, [restaurantsData, matchesVegMode, matchesCategory]);
 
   const recommendedForYouRestaurants = useMemo(() => {
     const idsInOrder = (recommendedRestaurantIds || []).map((id) => String(id));
@@ -2203,13 +2222,24 @@ export default function Home() {
 
                   {/* Categories Horizontal Slider */}
                   <div className="flex overflow-x-auto gap-1.5 pb-2 scrollbar-hide -mx-4 px-4 mask-edge-fade">
-                    {displayCategories.map((category, index) => (
-                      <Link
+                    {[
+                      {
+                        id: "all",
+                        name: "All",
+                        slug: "all",
+                        image: "https://images.unsplash.com/photo-1490818387583-1b5ba45973e6?w=400&q=80"
+                      },
+                      ...displayCategories
+                    ].map((category, index) => {
+                      const isActive = selectedCategory === category.name;
+                      return (
+                      <button
                         key={category.id || index}
-                        to={`/food/user/category/${category.slug}`}
-                        className="flex-shrink-0 flex flex-col items-center gap-1.5 group w-[76px]"
+                        type="button"
+                        onClick={() => setSelectedCategory(category.name)}
+                        className={`flex-shrink-0 flex flex-col items-center gap-1.5 group w-[76px] transition-transform ${isActive ? 'scale-105' : ''}`}
                       >
-                        <div className="relative w-[68px] h-[68px] sm:w-[84px] sm:h-[84px] rounded-full overflow-hidden shadow-md border-2 border-gray-100 dark:border-gray-800 bg-white dark:bg-[#1a1a1a] group-active:scale-95 transition-all duration-300">
+                        <div className={`relative w-[68px] h-[68px] sm:w-[84px] sm:h-[84px] rounded-full overflow-hidden shadow-md border-2 ${isActive ? 'border-primary ring-2 ring-primary/30' : 'border-gray-100 dark:border-gray-800'} bg-white dark:bg-[#1a1a1a] group-active:scale-95 transition-all duration-300`}>
                           {/* Shining Glint Effect */}
                           <div className="absolute inset-0 z-10 pointer-events-none overflow-hidden">
                             <motion.div
@@ -2232,11 +2262,11 @@ export default function Home() {
                             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
                           />
                         </div>
-                        <span className="text-[11px] font-extrabold text-gray-900 dark:text-gray-100 text-center leading-tight line-clamp-1 w-full px-0.5">
+                        <span className={`text-[11px] font-extrabold text-center leading-tight line-clamp-1 w-full px-0.5 ${isActive ? 'text-primary' : 'text-gray-900 dark:text-gray-100'}`}>
                           {category.name}
                         </span>
-                      </Link>
-                    ))}
+                      </button>
+                    )})}
                   </div>
                 </div>
 
@@ -2375,10 +2405,7 @@ export default function Home() {
           </motion.section>
         )}
 
-        {/* Ads Banner Section (Moved here to separate from Hero Banners) */}
-        <div className="pt-2 sm:pt-3 lg:pt-4">
-          <AdsBannerCarousel banners={adsBannerImages} data={adsBannersData} />
-        </div>
+        {/* Ads Banner Section Removed as requested */}
 
         <ExploreMoreSection
           heading={exploreMoreHeading}
@@ -2393,16 +2420,66 @@ export default function Home() {
           className="content-auto space-y-0 pt-3 sm:pt-4 lg:pt-6 pb-8 md:pb-10"
         >
           {!shouldShowOutOfZoneHome && (
-            <div className="px-4 mb-3 lg:mb-4">
-              <div className="flex flex-col gap-0.5 lg:gap-1">
-                <h2 className="text-xs sm:text-sm lg:text-base font-semibold text-gray-400 tracking-widest uppercase">
-                  {filteredRestaurants.length} Restaurants Delivering to You
-                </h2>
-                <span className="text-base sm:text-lg lg:text-2xl text-gray-500 font-normal">
-                  Featured
-                </span>
+            <>
+              {/* Premium Restaurants Horizontal Scroll */}
+              {filteredRestaurants.filter(r => (r.rating || 0) >= 4.5).length > 0 && (
+                <div className="mb-6 lg:mb-8">
+                  <div className="px-4 mb-3">
+                    <h2 className="text-lg sm:text-xl lg:text-2xl font-black text-gray-900 dark:text-white tracking-tight">
+                      Gourmet Restaurants
+                    </h2>
+                    <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">Premium spots just for you</p>
+                  </div>
+                  <div className="flex overflow-x-auto gap-4 px-4 pb-4 scrollbar-hide snap-x snap-mandatory">
+                    {filteredRestaurants
+                      .filter(r => (r.rating || 0) >= 4.5)
+                      .map((restaurant) => {
+                        const restaurantSlug = restaurant.slug || restaurant.name.toLowerCase().replace(/\s+/g, "-");
+                        return (
+                          <div key={restaurant.mongoId || restaurant.id} className="min-w-[240px] max-w-[240px] sm:min-w-[280px] sm:max-w-[280px] snap-start flex-shrink-0">
+                            <Link
+                              to={`/user/restaurants/${restaurantSlug}`}
+                              className="block rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#1a1a1a] shadow-sm hover:shadow-md transition-all active:scale-95"
+                            >
+                              <div className="relative h-32 sm:h-36 bg-gray-50 dark:bg-gray-900">
+                                <RestaurantImageCarousel
+                                  restaurant={restaurant}
+                                  backendOrigin={BACKEND_ORIGIN}
+                                  className="h-32 sm:h-36"
+                                  roundedClass="rounded-t-2xl"
+                                />
+                                <div className="absolute top-2 left-2 px-2 py-0.5 rounded-md bg-black/80 backdrop-blur-md text-white font-bold text-xs shadow-lg border border-white/10 flex items-center gap-1">
+                                  <Star className="w-3 h-3 fill-primary text-primary" />
+                                  {Number(restaurant.rating).toFixed(1)}
+                                </div>
+                              </div>
+                              <div className="p-3">
+                                <p className="text-sm font-bold text-gray-900 dark:text-white truncate">
+                                  {restaurant.name}
+                                </p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 line-clamp-1">
+                                  {Array.isArray(restaurant.cuisines) ? restaurant.cuisines.join(", ") : "Various Cuisines"}
+                                </p>
+                              </div>
+                            </Link>
+                          </div>
+                        );
+                      })}
+                  </div>
+                </div>
+              )}
+
+              <div className="px-4 mb-3 lg:mb-4">
+                <div className="flex flex-col gap-0.5 lg:gap-1">
+                  <h2 className="text-xs sm:text-sm lg:text-base font-semibold text-gray-400 tracking-widest uppercase">
+                    {filteredRestaurants.length} Restaurants Delivering to You
+                  </h2>
+                  <span className="text-base sm:text-lg lg:text-2xl text-gray-900 dark:text-white font-bold tracking-tight">
+                    All Restaurants
+                  </span>
+                </div>
               </div>
-            </div>
+            </>
           )}
           {shouldShowOutOfZoneHome ? (
             <div className="flex flex-col items-center justify-center py-16 px-4 text-center min-h-[480px] overflow-visible">

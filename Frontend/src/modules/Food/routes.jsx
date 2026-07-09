@@ -84,6 +84,9 @@ export default function App() {
               element={<DeliveryRouter />}
             />
 
+            {/* Admin Module - Redirect /food/admin to /admin */}
+            <Route path="admin/*" element={<Navigate to="/admin" replace />} />
+
             {/* User Module - Explicitly mapped to /user and the catch-all for /food/ and / */}
             {/* NOTE: /user/food is a common mis-navigation - redirect to correct /food/user home */}
             <Route path="user/food" element={<Navigate to="/food/user" replace />} />
