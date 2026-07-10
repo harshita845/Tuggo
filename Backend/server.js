@@ -1,5 +1,7 @@
 import http from 'http';
 import app from './src/app.js';
+import dns from "node:dns/promises";
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
 import { config } from './src/config/env.js';
 import { validateConfig } from './src/config/validateEnv.js';
 import { connectDB, disconnectDB } from './src/config/db.js';
@@ -65,7 +67,7 @@ const startServer = async () => {
         } else {
             logger.warn('[Bootstrap] Redis is disabled in API server; getIO() will warn unless socket events stay inside socket-server.js');
         }
-        
+
         // Watchdog recovered stuck orders is moved to scheduler-server.js
 
         // 5. Conditionally initialize BullMQ queues.
