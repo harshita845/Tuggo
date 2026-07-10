@@ -1,4 +1,4 @@
-﻿import { Outlet, useLocation, useNavigate } from "react-router-dom"
+import { Outlet, useLocation, useNavigate } from "react-router-dom"
 import { useEffect, useState, createContext, useContext } from "react"
 import { ProfileProvider } from "@food/context/ProfileContext"
 import { CartProvider } from "@food/context/CartContext"
@@ -134,7 +134,11 @@ function UserLayoutShell() {
 
 export default function UserLayout() {
   const [introFinished, setIntroFinished] = useState(() => {
-    return !!(typeof window !== 'undefined' && sessionStorage.getItem("appIntroSeen"))
+    try {
+      return !!(typeof window !== 'undefined' && sessionStorage.getItem("appIntroSeen"))
+    } catch (e) {
+      return true;
+    }
   })
 
   return (

@@ -2,6 +2,13 @@ import { useState, useEffect, useRef } from "react";
 import api from "@food/api";
 import { Loader2 } from "lucide-react";
 
+const safeGetIntroSeen = () => {
+  try { return sessionStorage.getItem("appIntroSeen"); } catch (e) { return null; }
+};
+const safeSetIntroSeen = () => {
+  try { sessionStorage.setItem("appIntroSeen", "true"); } catch (e) {}
+};
+
 export default function AppIntroSplash({ onComplete }) {
   const [screens, setScreens] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -9,7 +16,7 @@ export default function AppIntroSplash({ onComplete }) {
   
   useEffect(() => {
     // Check if already seen in this session
-    if (sessionStorage.getItem("appIntroSeen")) {
+    if (safeGetIntroSeen()) {
       onComplete();
       return;
     }
@@ -20,12 +27,12 @@ export default function AppIntroSplash({ onComplete }) {
         if (res.data?.success && res.data.data.length > 0) {
           setScreens(res.data.data);
         } else {
-          sessionStorage.setItem("appIntroSeen", "true");
+          safeSetIntroSeen();
           onComplete();
         }
       } catch (err) {
         console.error("Failed to fetch intro screens", err);
-        sessionStorage.setItem("appIntroSeen", "true");
+        safeSetIntroSeen();
         onComplete();
       } finally {
         setLoading(false);
@@ -41,7 +48,7 @@ export default function AppIntroSplash({ onComplete }) {
         if (currentIndex < screens.length - 1) {
           setCurrentIndex(prev => prev + 1);
         } else {
-          sessionStorage.setItem("appIntroSeen", "true");
+          safeSetIntroSeen();
           onComplete();
         }
       }, duration);
@@ -49,7 +56,15 @@ export default function AppIntroSplash({ onComplete }) {
     }
   }, [currentIndex, screens, onComplete]);
 
-  if (sessionStorage.getItem("appIntroSeen")) return null;
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    if (videoRef.current) {
+      videoRef.current.play().catch(e => console.log("Video auto-play prevented:", e));
+    }
+  }, [currentIndex]);
+
+  if (safeGetIntroSeen()) return null;
   if (loading) {
     return (
       <div className="fixed inset-0 z-[9999] bg-white flex items-center justify-center">
@@ -61,13 +76,6 @@ export default function AppIntroSplash({ onComplete }) {
 
   const currentScreen = screens[currentIndex];
 
-  const videoRef = useRef(null);
-
-  useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.play().catch(e => console.log("Video auto-play prevented:", e));
-    }
-  }, [currentIndex]);
 
   return (
     <div className="fixed inset-0 z-[9999] bg-black flex flex-col items-center justify-center overflow-hidden animate-in fade-in duration-300">
@@ -93,7 +101,7 @@ export default function AppIntroSplash({ onComplete }) {
       
       <button 
         onClick={() => {
-          sessionStorage.setItem("appIntroSeen", "true");
+          safeSetIntroSeen();
           onComplete();
         }}
         className="absolute top-6 right-6 px-4 py-2 bg-black/40 text-white rounded-full text-sm font-medium backdrop-blur-sm z-50 hover:bg-black/60 transition-colors"

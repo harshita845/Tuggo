@@ -2116,7 +2116,7 @@ export default function Home() {
           `}</style>
         </div>
 
-        <div className="md:hidden relative overflow-x-clip bg-white dark:bg-[#0a0a0a]">
+        <div className="relative overflow-x-clip bg-white dark:bg-[#0a0a0a]">
           {/* Brand Top Section (Dark) */}
           {/* Decoupled Dark Background - Dynamic height based on actual components to prevent clipping sticky elements while covering properly */}
           <div 
@@ -2227,15 +2227,15 @@ export default function Home() {
                         id: "all",
                         name: "All",
                         slug: "all",
-                        image: "https://images.unsplash.com/photo-1490818387583-1b5ba45973e6?w=400&q=80"
+                        image: foodImages[0]
                       },
                       ...displayCategories
                     ].map((category, index) => {
                       const isActive = selectedCategory === category.name;
                       return (
-                      <button
+                      <Link
                         key={category.id || index}
-                        type="button"
+                        to={category.slug === 'all' ? '/food/user/categories' : `/food/user/category/${category.slug || category.name.toLowerCase().replace(/\s+/g, "-")}`}
                         onClick={() => setSelectedCategory(category.name)}
                         className={`flex-shrink-0 flex flex-col items-center gap-1.5 group w-[76px] transition-transform ${isActive ? 'scale-105' : ''}`}
                       >
@@ -2265,7 +2265,7 @@ export default function Home() {
                         <span className={`text-[11px] font-extrabold text-center leading-tight line-clamp-1 w-full px-0.5 ${isActive ? 'text-primary' : 'text-gray-900 dark:text-gray-100'}`}>
                           {category.name}
                         </span>
-                      </button>
+                      </Link>
                     )})}
                   </div>
                 </div>
@@ -3277,7 +3277,7 @@ export default function Home() {
                         }}
                         whileTap={{ scale: 0.95 }}>
                         <Link
-                          to={`/user/category/${categoryData.slug || categoryData.name.toLowerCase().replace(/\s+/g, "-")}`}
+                          to={`/food/user/category/${categoryData.slug || categoryData.name.toLowerCase().replace(/\s+/g, "-")}`}
                           onClick={() => setShowAllCategoriesModal(false)}
                           className="block">
                           <div className="flex flex-col items-center gap-2 sm:gap-2.5 cursor-pointer w-full">
