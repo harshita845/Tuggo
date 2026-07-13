@@ -729,11 +729,10 @@ export const useDeliveryNotifications = () => {
       return undefined;
     }
 
-    const backendUrl = resolveSocketOrigin();
-    const socketUrl = backendUrl;
+    const socketUrl = resolveSocketOrigin();
     
     debugLog('?? Attempting to connect to Delivery Socket.IO:', socketUrl);
-    debugLog('?? Backend URL:', backendUrl);
+    debugLog('?? Backend URL:', resolveSocketOrigin());
     debugLog('?? API_BASE_URL:', API_BASE_URL);
     debugLog('?? Delivery Partner ID:', deliveryPartnerId);
     debugLog('?? Environment: (ui-only mode)');

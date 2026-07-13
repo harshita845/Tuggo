@@ -4,6 +4,7 @@ import io from "socket.io-client"
 import { FileText, Calendar, Package } from "lucide-react"
 import { adminAPI } from "@food/api"
 import { API_BASE_URL } from "@food/api/config"
+import { resolveSocketOrigin } from "@food/utils/socketOrigin"
 import { toast } from "sonner"
 import OrdersTopbar from "@food/components/admin/orders/OrdersTopbar"
 import OrdersTable from "@food/components/admin/orders/OrdersTable"
@@ -584,7 +585,7 @@ export default function OrdersPage({ statusKey = "all" }) {
       return undefined
     }
 
-    const socket = io(backendUrl, {
+    const socket = io(resolveSocketOrigin(), {
       transports: ["websocket", "polling"],
       reconnection: true,
       reconnectionAttempts: Infinity,

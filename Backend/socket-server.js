@@ -1,5 +1,7 @@
 import http from 'http';
 import express from 'express';
+import dns from "node:dns/promises";
+dns.setServers(["8.8.8.8", "1.1.1.1"]);
 import { config } from './src/config/env.js';
 import { connectRedis, closeRedis } from './src/config/redis.js';
 import { initSocket } from './src/config/socket.js';

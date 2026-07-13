@@ -1315,16 +1315,22 @@ export const listApprovedRestaurants = async (query = {}) => {
         }
     }
 
-    // Optional zone polygon filter (when restaurant.zoneId is not set yet).
+    // Optional zone polygon filter
     const zoneIdRaw = String(query.zoneId || '').trim();
+    let zoneFilterMatch = null;
     if (zoneIdRaw && mongoose.Types.ObjectId.isValid(zoneIdRaw)) {
-        const zoneOr = [{ zoneId: new mongoose.Types.ObjectId(zoneIdRaw) }];
         const zoneDoc = await FoodZone.findOne({ _id: zoneIdRaw, isActive: true }).lean();
         const polygon = zoneToPolygon(zoneDoc);
         if (polygon) {
-            zoneOr.push({ location: { $geoWithin: { $geometry: polygon } } });
+            // Strictly enforce polygon location
+            zoneFilterMatch = { location: { $geoWithin: { $geometry: polygon } } };
+        } else {
+            // Fallback to zoneId matching if no polygon defined for the zone
+            zoneFilterMatch = { zoneId: new mongoose.Types.ObjectId(zoneIdRaw) };
         }
-        filter.$and = [...(filter.$and || []), { $or: zoneOr }];
+        console.log(`[DEBUG] listApprovedRestaurants: Applied zone filter for zoneId=${zoneIdRaw}, using polygon=${!!polygon}`);
+    } else {
+        console.log(`[DEBUG] listApprovedRestaurants: NO zone filter applied. zoneIdRaw=${zoneIdRaw}`);
     }
 
     const lat = toFiniteNumber(query.lat);
@@ -1379,6 +1385,9 @@ export const listApprovedRestaurants = async (query = {}) => {
         };
         if (radiusKm !== null) {
             geoNear.$geoNear.maxDistance = Math.max(0.1, radiusKm) * 1000;
+        } else {
+            // Provide a default maximum distance of 50 km so it doesn't return restaurants across the country
+            geoNear.$geoNear.maxDistance = 50 * 1000;
         }
 
         const sortStage = (() => {
@@ -1415,6 +1424,7 @@ export const listApprovedRestaurants = async (query = {}) => {
 
         const basePipeline = [
             geoNear,
+            ...(zoneFilterMatch ? [{ $match: zoneFilterMatch }] : []),
             ...lookupStages,
             {
                 $addFields: {
@@ -1536,8 +1546,12 @@ export const listApprovedRestaurants = async (query = {}) => {
         }
     ];
 
+    const finalFilter = zoneFilterMatch 
+        ? { ...filter, $and: [...(filter.$and || []), zoneFilterMatch] } 
+        : filter;
+
     const basePipeline = [
-        { $match: filter },
+        { $match: finalFilter },
         ...lookupStages,
         { $addFields: { computedZoneRank: { $ifNull: ['$zoneRank', 999] } } },
         sort
