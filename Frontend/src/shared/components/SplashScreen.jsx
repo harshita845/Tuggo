@@ -97,7 +97,7 @@ export default function SplashScreen({ onFinish }) {
                 style={{ transform: 'translateZ(0)', willChange: "transform, opacity" }}
                 className="text-7xl md:text-9xl font-black tracking-tighter text-white relative font-['Outfit'] select-none text-center"
               >
-                Tuggo Food Delivery
+                TUGGO
 
                 {/* Optimized Shine Effect Layer */}
                 <motion.div

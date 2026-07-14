@@ -77,20 +77,43 @@ export default function AddZone() {
   }, [formData.country])
 
   useEffect(() => {
-    if (!mapLoading && mapInstanceRef.current && autocompleteInputRef.current && window.google?.maps?.places && !autocompleteRef.current) {
-      const autocomplete = new window.google.maps.places.Autocomplete(autocompleteInputRef.current, {
-        componentRestrictions: { country: 'in' }
-      })
-      autocomplete.addListener('place_changed', () => {
-        const place = autocomplete.getPlace()
-        if (place.geometry && place.geometry.location && mapInstanceRef.current) {
-          mapInstanceRef.current.setCenter(place.geometry.location)
-          mapInstanceRef.current.setZoom(15)
-          setLocationSearch(place.formatted_address || place.name || "")
-        }
-      })
-      autocompleteRef.current = autocomplete
+    let intervalId = null;
+
+    const initAutocomplete = () => {
+      if (mapInstanceRef.current && autocompleteInputRef.current && window.google?.maps?.places && !autocompleteRef.current) {
+        const autocomplete = new window.google.maps.places.Autocomplete(autocompleteInputRef.current, {
+          componentRestrictions: { country: 'in' }
+        })
+        autocomplete.addListener('place_changed', () => {
+          const place = autocomplete.getPlace()
+          if (place.geometry && place.geometry.location && mapInstanceRef.current) {
+            mapInstanceRef.current.setCenter(place.geometry.location)
+            mapInstanceRef.current.setZoom(15)
+            setLocationSearch(place.formatted_address || place.name || "")
+          }
+        })
+        autocompleteRef.current = autocomplete
+        if (intervalId) clearInterval(intervalId);
+      }
+    };
+
+    if (!mapLoading) {
+      initAutocomplete();
+      if (!autocompleteRef.current) {
+        intervalId = setInterval(initAutocomplete, 500);
+      }
     }
+
+    return () => {
+      if (intervalId) clearInterval(intervalId);
+      if (autocompleteRef.current) {
+        if (window.google?.maps?.event) {
+          window.google.maps.event.clearInstanceListeners(autocompleteRef.current);
+        }
+        document.querySelectorAll('.pac-container').forEach(el => el.remove());
+        autocompleteRef.current = null;
+      }
+    };
   }, [mapLoading])
 
   useEffect(() => {

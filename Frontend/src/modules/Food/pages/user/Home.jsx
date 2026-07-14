@@ -1128,6 +1128,12 @@ export default function Home() {
         return;
       }
 
+      if (!effectiveZoneId) {
+        setLoadingRestaurants(false);
+        setRestaurantsData([]);
+        return;
+      }
+
       const isLocationSame =
         homePageCache.lat === roundCoord(effectiveLocation?.latitude) &&
         homePageCache.lng === roundCoord(effectiveLocation?.longitude);
@@ -2215,7 +2221,7 @@ export default function Home() {
                   <div className={`flex items-center gap-2 min-w-0 ${isCategoryStuck ? 'hidden' : ''}`}>
                     <h2 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white min-w-0 flex-shrink leading-tight">What's on your mind today?</h2>
                     <div className="h-[1px] bg-gray-100 dark:bg-gray-800 flex-1"></div>
-                    <Link to="/food/user/categories" className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-0.5 whitespace-nowrap shrink-0 hover:text-gray-900 dark:hover:text-white transition-colors">
+                    <Link to="/food/user/under-250" className="text-sm font-bold text-gray-800 dark:text-gray-200 flex items-center gap-0.5 whitespace-nowrap shrink-0 hover:text-gray-900 dark:hover:text-white transition-colors">
                       View All <ArrowDownUp className="h-3 w-3 rotate-90" />
                     </Link>
                   </div>
@@ -2235,7 +2241,7 @@ export default function Home() {
                       return (
                       <Link
                         key={category.id || index}
-                        to={category.slug === 'all' ? '/food/user/categories' : `/food/user/category/${category.slug || category.name.toLowerCase().replace(/\s+/g, "-")}`}
+                        to={category.slug === 'all' ? '/food/user/under-250' : `/food/user/category/${category.slug || category.name.toLowerCase().replace(/\s+/g, "-")}`}
                         onClick={() => setSelectedCategory(category.name)}
                         className={`flex-shrink-0 flex flex-col items-center gap-1.5 group w-[76px] transition-transform ${isActive ? 'scale-105' : ''}`}
                       >

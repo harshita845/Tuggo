@@ -738,7 +738,7 @@ export const useDeliveryNotifications = () => {
     debugLog('?? Environment: (ui-only mode)');
     
     // Block localhost only in production builds. In dev, localhost is expected.
-    if (import.meta.env.PROD && backendUrl.includes('localhost')) {
+    if (import.meta.env.PROD && socketUrl.includes('localhost')) {
       debugError('? CRITICAL: Trying to connect Socket.IO to localhost in production!');
       debugError('?? Current socketUrl:', socketUrl);
       debugError('?? Current API_BASE_URL:', API_BASE_URL);
@@ -746,8 +746,8 @@ export const useDeliveryNotifications = () => {
       return;
     }
     
-    if (!isValidSocketOrigin(backendUrl)) {
-      debugError('? CRITICAL: Invalid backend URL format:', backendUrl);
+    if (!isValidSocketOrigin(socketUrl)) {
+      debugError('? CRITICAL: Invalid backend URL format:', socketUrl);
       debugError('?? API_BASE_URL:', API_BASE_URL);
       return;
     }
@@ -758,7 +758,7 @@ export const useDeliveryNotifications = () => {
     } catch (urlError) {
       debugError('? CRITICAL: Invalid Socket.IO URL:', socketUrl);
       debugError('?? URL validation error:', urlError.message);
-      debugError('?? Backend URL:', backendUrl);
+      debugError('?? Backend URL:', socketUrl);
       debugError('?? API_BASE_URL:', API_BASE_URL);
       return; // Don't try to connect with invalid URL
     }

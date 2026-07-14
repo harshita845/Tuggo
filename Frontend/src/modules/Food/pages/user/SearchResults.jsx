@@ -70,8 +70,11 @@ export default function SearchResults() {
 
         if (!isSubscribed) return;
 
-        if (response.data && response.data.success && response.data.data && response.data.data.categories) {
-          const categoriesArray = response.data.data.categories
+        const payload = response?.data?.data || response?.data || response || {}
+        if (payload && (Array.isArray(payload.categories) || Array.isArray(payload))) {
+          const categoriesArray = Array.isArray(payload?.categories)
+            ? payload.categories
+            : (Array.isArray(payload) ? payload : [])
 
           // Transform API categories to match expected format
           const transformedCategories = [

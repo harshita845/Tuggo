@@ -3,6 +3,8 @@ import AppRoutes from './routes'
 import SplashScreen from '@/shared/components/SplashScreen.jsx'
 import PageLoader from '@/shared/components/PageLoader.jsx'
 
+import { ThemeProvider } from '@food/context/ThemeContext'
+
 function App() {
   const [showSplash, setShowSplash] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -48,11 +50,13 @@ function App() {
   }
 
   return (
-    <>
-      {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
-      <PageLoader />
-      <AppRoutes />
-    </>
+    <ThemeProvider>
+      <>
+        {showSplash && <SplashScreen onFinish={handleSplashFinish} />}
+        <PageLoader />
+        <AppRoutes />
+      </>
+    </ThemeProvider>
   )
 }
 

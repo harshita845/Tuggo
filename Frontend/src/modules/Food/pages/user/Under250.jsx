@@ -903,9 +903,10 @@ export default function Under250() {
       try {
         setLoadingCategories(true)
         const response = await adminAPI.getPublicCategories(zoneId ? { zoneId } : {})
-        const categoriesRaw = Array.isArray(response?.data?.data?.categories)
-          ? response.data.data.categories
-          : []
+        const payload = response?.data?.data || response?.data || response || {}
+        const categoriesRaw = Array.isArray(payload?.categories)
+          ? payload.categories
+          : (Array.isArray(payload) ? payload : [])
 
         const mappedCategories = categoriesRaw
           .map((cat, index) => {

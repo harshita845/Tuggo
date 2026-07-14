@@ -95,9 +95,11 @@ export default function ProfessionalSearch() {
     }
     try {
       const res = await adminAPI.getPublicCategories({ zoneId })
-      if (res.data?.success) {
-        sessionCategoriesCache.set(cacheKey, res.data.data.categories);
-        setCategories(res.data.data.categories)
+      const payload = res?.data?.data || res?.data || res || {}
+      if (Array.isArray(payload.categories) || Array.isArray(payload)) {
+        const categories = Array.isArray(payload.categories) ? payload.categories : payload;
+        sessionCategoriesCache.set(cacheKey, categories);
+        setCategories(categories)
       }
     } catch (err) {
       console.error("Failed to fetch categories", err)

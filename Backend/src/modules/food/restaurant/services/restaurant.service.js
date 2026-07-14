@@ -1338,6 +1338,13 @@ export const listApprovedRestaurants = async (query = {}) => {
     // Accept both radiusKm (preferred) and maxDistance (legacy frontend param).
     const radiusKm = toFiniteNumber(query.radiusKm) ?? toFiniteNumber(query.maxDistance);
     const sortBy = parseSortBy(query.sortBy);
+    const wantsGeo = (radiusKm !== null) || sortBy === 'nearest' || (lat !== null && lng !== null);
+
+    // Safety check: Prevent returning all restaurants globally if no zone and no geo constraints are provided
+    if (!zoneFilterMatch && (!wantsGeo || lat === null || lng === null)) {
+        console.log(`[DEBUG] listApprovedRestaurants: No zone filter and no geo params. Returning empty array to prevent global dump.`);
+        return { restaurants: [], total: 0, page, limit };
+    }
 
     const projection = {
         restaurantName: 1,
@@ -1373,7 +1380,6 @@ export const listApprovedRestaurants = async (query = {}) => {
 
     // Use $geoNear only when geo is explicitly needed (radius filter or nearest sorting).
     // This avoids accidentally hiding restaurants that do not have coordinates yet.
-    const wantsGeo = (radiusKm !== null) || sortBy === 'nearest';
     if (lat !== null && lng !== null && wantsGeo) {
         const geoNear = {
             $geoNear: {

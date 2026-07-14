@@ -1084,6 +1084,11 @@ export default function OrderTracking() {
           if (!isSubscribed) return;
           setError(err.response?.data?.message || 'Failed to fetch order details');
           terminalPollStopRef.current = true;
+        } else if (err.response?.status === 404) {
+          // If the order is deleted or not found on subsequent polls, stop polling
+          terminalPollStopRef.current = true;
+          if (!isSubscribed) return;
+          setError(err.response?.data?.message || 'Order not found');
         }
       } finally {
         requestInProgress = false;
