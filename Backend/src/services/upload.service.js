@@ -5,11 +5,22 @@ import sharp from 'sharp';
 import { v4 as uuidv4 } from 'uuid';
 import { config } from '../config/env.js';
 
-// Ensure the base upload directory exists
+// Ensure the base upload directory and standard subdirectories exist
 const baseUploadDir = config.uploadPath || path.join(process.cwd(), 'uploads');
 if (!fs.existsSync(baseUploadDir)) {
     fs.mkdirSync(baseUploadDir, { recursive: true });
 }
+
+const ensureDirExists = (subfolder) => {
+    const dir = path.join(baseUploadDir, subfolder);
+    if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+    }
+    return dir;
+};
+
+// Create required folders on startup
+['images', 'videos', 'documents'].forEach(folder => ensureDirExists(folder));
 
 // Multer memory storage
 const storage = multer.memoryStorage();
@@ -24,23 +35,12 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-// Multer middleware: max 5MB (from SOP)
+// Multer middleware: max 5MB (from SOP) for specific image endpoints
 export const upload = multer({
     storage,
     limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
     fileFilter
 });
-
-/**
- * Ensures that the subfolder inside the base upload directory exists.
- */
-const ensureDirExists = (subfolder) => {
-    const dir = path.join(baseUploadDir, subfolder);
-    if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-    }
-    return dir;
-};
 
 /**
  * Processes and saves an image buffer to the given folder.
@@ -162,3 +162,47 @@ export const buildRawDownloadUrlFromFileUrl = (fileUrl, options = {}) => {
     // Simply return the relative path
     return fileUrl;
 };
+
+// --- Generic Production-Ready File Upload System ---
+
+const genericStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        let subfolder = 'misc';
+        const mime = file.mimetype;
+        if (mime.startsWith('image/')) subfolder = 'images';
+        else if (mime.startsWith('video/')) subfolder = 'videos';
+        else if (mime === 'application/pdf') subfolder = 'documents';
+        
+        const dir = path.join(baseUploadDir, subfolder);
+        // ensure dir just in case
+        if (!fs.existsSync(dir)) {
+            fs.mkdirSync(dir, { recursive: true });
+        }
+        cb(null, dir);
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = `${Date.now()}_${Math.round(Math.random() * 1e9)}`;
+        const ext = path.extname(file.originalname) || '';
+        const name = path.basename(file.originalname, ext).replace(/[^a-zA-Z0-9]/g, '_');
+        cb(null, `${name}_${uniqueSuffix}${ext}`);
+    }
+});
+
+const genericFileFilter = (req, file, cb) => {
+    const allowed = [
+        'image/jpeg', 'image/png', 'image/webp', 'image/gif',
+        'video/mp4', 'video/webm',
+        'application/pdf'
+    ];
+    if (allowed.includes(file.mimetype)) {
+        cb(null, true);
+    } else {
+        cb(new Error(`Invalid file type: ${file.mimetype}. Only images, videos, and PDFs are supported.`), false);
+    }
+};
+
+export const genericUpload = multer({
+    storage: genericStorage,
+    limits: { fileSize: 50 * 1024 * 1024 }, // 50 MB
+    fileFilter: genericFileFilter
+});

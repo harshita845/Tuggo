@@ -6,6 +6,8 @@ import { toast } from "sonner"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@food/components/ui/dialog"
 import { Popover, PopoverContent, PopoverTrigger } from "@food/components/ui/popover"
 import { getFoodDisplayPrice, getFoodVariants } from "@food/utils/foodVariants"
+import { getMediaUrl } from "@/shared/utils/media.js"
+
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
@@ -74,7 +76,8 @@ export default function FoodsList() {
   const toArray = (value) => (Array.isArray(value) ? value : [])
   const withImageVersion = (url) => {
     if (!url || typeof url !== "string") return "https://via.placeholder.com/40"
-    return `${url}${url.includes("?") ? "&" : "?"}v=${imageVersion}`
+    const fullUrl = getMediaUrl(url);
+    return `${fullUrl}${fullUrl.includes("?") ? "&" : "?"}v=${imageVersion}`
   }
 
   const fetchAllFoods = useCallback(async () => {
@@ -957,7 +960,7 @@ export default function FoodsList() {
                   <label className="block text-sm font-medium text-slate-700 mb-1">Image Preview</label>
                   <div className="w-28 h-28 rounded-lg overflow-hidden border border-slate-200 bg-slate-50">
                     <img
-                      src={imagePreviewUrl}
+                      src={getMediaUrl(imagePreviewUrl)}
                       alt="Food preview"
                       className="w-full h-full object-cover"
                     />

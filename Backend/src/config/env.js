@@ -41,7 +41,7 @@ export const config = {
     bcryptSaltRounds: Number(process.env.BCRYPT_SALT_ROUNDS || 10),
 
     // Uploads
-    uploadPath: process.env.UPLOAD_PATH || 'uploads/',
+    uploadPath: process.env.UPLOAD_DIR || process.env.UPLOAD_PATH || 'uploads/',
 
     // Redis
     redisEnabled: process.env.REDIS_ENABLED === 'true',
@@ -114,7 +114,7 @@ export const updateConfig = () => {
     config.authRateLimitWindowMinutes = Number(process.env.AUTH_RATE_LIMIT_WINDOW || config.authRateLimitWindowMinutes);
     config.authRateLimitMax = Number(process.env.AUTH_RATE_LIMIT_MAX || config.authRateLimitMax);
     config.bcryptSaltRounds = Number(process.env.BCRYPT_SALT_ROUNDS || config.bcryptSaltRounds);
-    config.uploadPath = process.env.UPLOAD_PATH || config.uploadPath;
+    config.uploadPath = process.env.UPLOAD_DIR || process.env.UPLOAD_PATH || config.uploadPath;
     config.redisEnabled = process.env.REDIS_ENABLED === 'true';
     config.redisUrl = process.env.REDIS_URL || config.redisUrl;
     config.bullmqEnabled = process.env.BULLMQ_ENABLED === 'true';
