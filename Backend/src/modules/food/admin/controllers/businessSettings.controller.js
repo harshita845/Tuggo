@@ -1,6 +1,6 @@
 import { FoodBusinessSettings } from '../models/businessSettings.model.js';
 import { sendResponse } from '../../../../utils/response.js';
-import { uploadImageBufferDetailed, uploadFileBufferDetailed } from '../../../../services/cloudinary.service.js';
+import { uploadGenericImage, uploadFileBuffer } from '../../../../services/upload.service.js';
 
 export async function getBusinessSettings(req, res, next) {
     try {
@@ -120,32 +120,29 @@ export async function updateBusinessSettings(req, res, next) {
         }
 
         // Handle file uploads
-        if (req.files) {
-            if (req.files.logo) {
-                const logoResult = await uploadImageBufferDetailed(req.files.logo[0].buffer, 'business/logos');
-                settings.logo = {
-                    url: logoResult.secure_url,
-                    publicId: logoResult.public_id
-                };
-            }
-            if (req.files.favicon) {
-                const faviconResult = await uploadImageBufferDetailed(req.files.favicon[0].buffer, 'business/favicons');
-                settings.favicon = {
-                    url: faviconResult.secure_url,
-                    publicId: faviconResult.public_id
-                };
-            }
-            if (req.files.termsAndConditionsPdf) {
-                const pdfFile = req.files.termsAndConditionsPdf[0];
-                const pdfResult = await uploadFileBufferDetailed(pdfFile.buffer, 'business/legal', {
-                    fileName: pdfFile.originalname,
-                    format: 'pdf'
-                });
-                settings.termsAndConditionsPdf = {
-                    url: pdfResult.secure_url,
-                    publicId: pdfResult.public_id
-                };
-            }
+        if (req.files?.logo) {
+            const logoUrl = await uploadGenericImage(req.files.logo[0].buffer, 'business/logos');
+            settings.logo = { url: logoUrl, publicId: null };
+        } else if (data.logo) {
+            settings.logo = { url: String(data.logo).trim(), publicId: null };
+        }
+
+        if (req.files?.favicon) {
+            const faviconUrl = await uploadGenericImage(req.files.favicon[0].buffer, 'business/favicons');
+            settings.favicon = { url: faviconUrl, publicId: null };
+        } else if (data.favicon) {
+            settings.favicon = { url: String(data.favicon).trim(), publicId: null };
+        }
+
+        if (req.files?.termsAndConditionsPdf) {
+            const pdfFile = req.files.termsAndConditionsPdf[0];
+            const pdfUrl = await uploadFileBuffer(pdfFile.buffer, 'business/legal', {
+                fileName: pdfFile.originalname,
+                format: 'pdf'
+            });
+            settings.termsAndConditionsPdf = { url: pdfUrl, publicId: null };
+        } else if (data.termsAndConditionsPdf) {
+            settings.termsAndConditionsPdf = { url: String(data.termsAndConditionsPdf).trim(), publicId: null };
         }
 
         await settings.save();

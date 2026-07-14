@@ -2352,7 +2352,7 @@ function RestaurantDetailsContent() {
               disabled={shouldShowGrayscale}
               className={`absolute -bottom-3 sm:-bottom-4 left-1/2 -translate-x-1/2 rounded-full h-8 sm:h-9 md:h-10 px-5 sm:px-7 text-[12px] sm:text-[14px] md:text-[16px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap min-w-[90px] md:min-w-[100px] z-10 ${shouldShowGrayscale
                 ? 'bg-gray-200 dark:bg-gray-800 text-gray-500 cursor-not-allowed opacity-50 shadow-none border border-gray-300'
-                : 'bg-[#E23744] hover:bg-[#D12B37] text-white shadow-[0_6px_16px_0_rgba(226,55,68,0.35)] hover:shadow-[0_8px_20px_rgba(226,55,68,0.45)] border border-[#E23744]/20'
+                : 'bg-[var(--primary)] hover:opacity-90 text-white shadow-md border border-[var(--primary)]/20'
                 }`}
             >
               ADD <span className="text-[16px] sm:text-[18px] md:text-[20px] font-medium leading-none mt-[-2px]">+</span>
@@ -3729,7 +3729,7 @@ function RestaurantDetailsContent() {
                       <Button
                         className={`flex-1 h-[44px] rounded-lg font-semibold flex items-center justify-center gap-2 ${shouldShowGrayscale
                           ? 'bg-gray-300 dark:bg-gray-700 text-gray-500 dark:text-gray-600 cursor-not-allowed opacity-50'
-                          : 'bg-red-500 hover:bg-red-600 text-white'
+                          : 'bg-[var(--primary)] hover:opacity-90 text-white'
                           }`}
                         onClick={(e) => {
                           if (!shouldShowGrayscale) {
@@ -3895,7 +3895,7 @@ function RestaurantDetailsContent() {
                   {/* Confirm Button - Fixed at bottom */}
                   <div className="px-4 pb-4 pt-2 border-t border-gray-100">
                     <Button
-                      className="w-full bg-red-500 hover:bg-red-600 text-white py-3 rounded-lg font-semibold"
+                      className="w-full bg-[var(--primary)] hover:opacity-90 text-white py-3 rounded-lg font-semibold"
                       onClick={() => {
                         setShowScheduleSheet(false)
                         // Handle schedule confirmation

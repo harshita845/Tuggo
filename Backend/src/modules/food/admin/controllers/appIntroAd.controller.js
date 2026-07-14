@@ -1,5 +1,5 @@
 import AppIntroAd from '../models/appIntroAd.model.js';
-import { uploadImageBuffer, uploadVideoBuffer } from '../../../../services/cloudinary.service.js';
+import { uploadGenericImage, uploadVideoBuffer } from '../../../../services/upload.service.js';
 
 export const getAppIntroAds = async (req, res) => {
     try {
@@ -22,14 +22,14 @@ export const createAppIntroAd = async (req, res) => {
             if (file.mimetype.startsWith('video/')) {
                 mediaUrl = await uploadVideoBuffer(file.buffer, 'app_intro_ads');
             } else {
-                mediaUrl = await uploadImageBuffer(file.buffer, 'app_intro_ads');
+                mediaUrl = await uploadGenericImage(file.buffer, 'app_intro_ads');
             }
         } else if (req.file) {
             const file = req.file;
             if (file.mimetype.startsWith('video/')) {
                 mediaUrl = await uploadVideoBuffer(file.buffer, 'app_intro_ads');
             } else {
-                mediaUrl = await uploadImageBuffer(file.buffer, 'app_intro_ads');
+                mediaUrl = await uploadGenericImage(file.buffer, 'app_intro_ads');
             }
         }
 
@@ -68,14 +68,14 @@ export const updateAppIntroAd = async (req, res) => {
             if (file.mimetype.startsWith('video/')) {
                 updates.mediaUrl = await uploadVideoBuffer(file.buffer, 'app_intro_ads');
             } else {
-                updates.mediaUrl = await uploadImageBuffer(file.buffer, 'app_intro_ads');
+                updates.mediaUrl = await uploadGenericImage(file.buffer, 'app_intro_ads');
             }
         } else if (req.file) {
             const file = req.file;
             if (file.mimetype.startsWith('video/')) {
                 updates.mediaUrl = await uploadVideoBuffer(file.buffer, 'app_intro_ads');
             } else {
-                updates.mediaUrl = await uploadImageBuffer(file.buffer, 'app_intro_ads');
+                updates.mediaUrl = await uploadGenericImage(file.buffer, 'app_intro_ads');
             }
         }
 

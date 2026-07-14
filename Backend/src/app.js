@@ -12,6 +12,7 @@ import { requestIdMiddleware } from './middleware/requestId.js';
 import { healthCheck } from './config/health.js';
 import { config } from './config/env.js';
 import compression from 'compression';
+import path from 'path';
 
 const app = express();
 
@@ -110,6 +111,11 @@ app.use('/api', responseTimeLogger);
 
 // API Routes
 app.use('/api', routes);
+
+// Static file serving for uploads (Local Development)
+if (config.nodeEnv !== 'production') {
+    app.use('/uploads', express.static(path.resolve(config.uploadPath)));
+}
 
 // Error Handling
 app.use(errorHandler);

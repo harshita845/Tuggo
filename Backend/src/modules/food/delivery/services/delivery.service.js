@@ -4,7 +4,7 @@ import { DeliverySupportTicket } from '../models/supportTicket.model.js';
 import { DeliveryBonusTransaction } from '../../admin/models/deliveryBonusTransaction.model.js';
 import { FoodEarningAddon } from '../../admin/models/earningAddon.model.js';
 import { FoodOrder } from '../../orders/models/order.model.js';
-import { uploadImageBuffer } from '../../../../services/cloudinary.service.js';
+import { uploadDeliveryImage } from '../../../../services/upload.service.js';
 import { ValidationError } from '../../../../core/auth/errors.js';
 import { getDeliveryCashLimitSettings } from '../../admin/services/admin.service.js';
 
@@ -28,34 +28,51 @@ export const registerDeliveryPartner = async (payload, files) => {
     const images = {};
 
     if (files?.profilePhoto?.[0]) {
-        images.profilePhoto = await uploadImageBuffer(files.profilePhoto[0].buffer, 'food/delivery/profile');
+        images.profilePhoto = await uploadDeliveryImage(files.profilePhoto[0].buffer);
+    } else if (payload?.profilePhoto) {
+        images.profilePhoto = String(payload.profilePhoto).trim();
     }
+    
     if (files?.aadharPhoto?.[0]) {
-        images.aadharPhoto = await uploadImageBuffer(files.aadharPhoto[0].buffer, 'food/delivery/aadhar');
+        images.aadharPhoto = await uploadDeliveryImage(files.aadharPhoto[0].buffer);
+    } else if (payload?.aadharPhoto) {
+        images.aadharPhoto = String(payload.aadharPhoto).trim();
     }
+    
     if (files?.aadharFrontPhoto?.[0]) {
-        images.aadharFrontPhoto = await uploadImageBuffer(files.aadharFrontPhoto[0].buffer, 'food/delivery/aadhar');
+        images.aadharFrontPhoto = await uploadDeliveryImage(files.aadharFrontPhoto[0].buffer);
+    } else if (payload?.aadharFrontPhoto) {
+        images.aadharFrontPhoto = String(payload.aadharFrontPhoto).trim();
     }
+    
     if (files?.aadharBackPhoto?.[0]) {
-        images.aadharBackPhoto = await uploadImageBuffer(files.aadharBackPhoto[0].buffer, 'food/delivery/aadhar');
+        images.aadharBackPhoto = await uploadDeliveryImage(files.aadharBackPhoto[0].buffer);
+    } else if (payload?.aadharBackPhoto) {
+        images.aadharBackPhoto = String(payload.aadharBackPhoto).trim();
     }
+    
     if (files?.panPhoto?.[0]) {
-        images.panPhoto = await uploadImageBuffer(files.panPhoto[0].buffer, 'food/delivery/pan');
+        images.panPhoto = await uploadDeliveryImage(files.panPhoto[0].buffer);
+    } else if (payload?.panPhoto) {
+        images.panPhoto = String(payload.panPhoto).trim();
     }
+    
     if (files?.drivingLicenseFrontPhoto?.[0]) {
-        images.drivingLicenseFrontPhoto = await uploadImageBuffer(
-            files.drivingLicenseFrontPhoto[0].buffer,
-            'food/delivery/license'
-        );
+        images.drivingLicenseFrontPhoto = await uploadDeliveryImage(files.drivingLicenseFrontPhoto[0].buffer);
+    } else if (payload?.drivingLicenseFrontPhoto) {
+        images.drivingLicenseFrontPhoto = String(payload.drivingLicenseFrontPhoto).trim();
     }
+    
     if (files?.drivingLicenseBackPhoto?.[0]) {
-        images.drivingLicenseBackPhoto = await uploadImageBuffer(
-            files.drivingLicenseBackPhoto[0].buffer,
-            'food/delivery/license'
-        );
+        images.drivingLicenseBackPhoto = await uploadDeliveryImage(files.drivingLicenseBackPhoto[0].buffer);
+    } else if (payload?.drivingLicenseBackPhoto) {
+        images.drivingLicenseBackPhoto = String(payload.drivingLicenseBackPhoto).trim();
     }
+    
     if (files?.rcPhoto?.[0]) {
-        images.rcPhoto = await uploadImageBuffer(files.rcPhoto[0].buffer, 'food/delivery/rc');
+        images.rcPhoto = await uploadDeliveryImage(files.rcPhoto[0].buffer);
+    } else if (payload?.rcPhoto) {
+        images.rcPhoto = String(payload.rcPhoto).trim();
     }
 
     const partner = await FoodDeliveryPartner.create({
@@ -158,7 +175,7 @@ export const updateDeliveryPartnerProfile = async (userId, payload, files) => {
     let updatedDocsRequiringReapproval = false;
 
     if (files?.profilePhoto?.[0]) {
-        partner.profilePhoto = await uploadImageBuffer(files.profilePhoto[0].buffer, 'food/delivery/profile');
+        partner.profilePhoto = await uploadDeliveryImage(files.profilePhoto[0].buffer);
     }
 
     await partner.save();
@@ -207,8 +224,8 @@ export const updateDeliveryPartnerProfilePhotoBase64 = async (userId, payload) =
     if (buffer.length > 8 * 1024 * 1024) {
         throw new ValidationError('Image too large (max 8MB)');
     }
-    // uploadImageBuffer expects raw bytes; mimeType is ignored by current implementation, but buffer is valid.
-    partner.profilePhoto = await uploadImageBuffer(buffer, 'food/delivery/profile');
+    // uploadDeliveryImage expects raw bytes; mimeType is ignored by current implementation, but buffer is valid.
+    partner.profilePhoto = await uploadDeliveryImage(buffer);
     await partner.save();
     return partner.toObject();
 };
@@ -252,7 +269,9 @@ export const updateDeliveryPartnerBankDetails = async (userId, payload, files) =
     }
 
     if (files?.upiQrCode?.[0]) {
-        partner.upiQrCode = await uploadImageBuffer(files.upiQrCode[0].buffer, 'food/delivery/upi');
+        partner.upiQrCode = await uploadDeliveryImage(files.upiQrCode[0].buffer);
+    } else if (payload?.upiQrCode) {
+        partner.upiQrCode = String(payload.upiQrCode).trim();
     }
 
     await partner.save();
@@ -321,7 +340,7 @@ export const updateDeliveryAvailability = async (userId, payload) => {
     if (validStatus === 'online' && shiftStartPicBase64) {
         try {
             const buffer = Buffer.from(shiftStartPicBase64, 'base64');
-            partner.shiftStartPic = await uploadImageBuffer(buffer, 'food/delivery/shift');
+            partner.shiftStartPic = await uploadDeliveryImage(buffer);
             partner.shiftStartTime = new Date();
             if (shiftStartAddress) {
                 partner.shiftStartAddress = shiftStartAddress;

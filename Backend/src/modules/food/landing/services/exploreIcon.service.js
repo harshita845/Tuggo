@@ -1,7 +1,5 @@
 import { FoodExploreIcon } from '../models/exploreIcon.model.js';
-import { v2 as cloudinary } from 'cloudinary';
-
-const CLOUDINARY_FOLDER = 'food/explore-icons';
+import { uploadGenericImage } from '../../../../services/upload.service.js';
 
 /**
  * List all explore icons (admin). Sorted by sortOrder.
@@ -23,18 +21,7 @@ const getNextSortOrder = async () => {
 /**
  * Upload buffer to Cloudinary and return { secure_url, public_id }.
  */
-const uploadImageToCloudinary = (buffer) => {
-    return new Promise((resolve, reject) => {
-        const stream = cloudinary.uploader.upload_stream(
-            { folder: CLOUDINARY_FOLDER, resource_type: 'image' },
-            (err, result) => {
-                if (err) return reject(err);
-                resolve({ secure_url: result.secure_url, public_id: result.public_id });
-            }
-        );
-        stream.end(buffer);
-    });
-};
+
 
 /**
  * Create one explore icon from uploaded file + label + link.
@@ -42,21 +29,25 @@ const uploadImageToCloudinary = (buffer) => {
  * @param {{ label: string, link?: string }} meta
  */
 export const createExploreIcon = async (file, meta) => {
-    if (!file?.buffer) {
-        throw new Error('Image file is required');
+    let secure_url = '';
+    if (file?.buffer) {
+        secure_url = await uploadGenericImage(file.buffer, 'explore-icons');
+    } else if (meta?.iconUrl) {
+        secure_url = String(meta.iconUrl).trim();
+    } else {
+        throw new Error('Image file or URL is required');
     }
     const label = (meta?.label || '').trim();
     if (!label) {
         throw new Error('Label is required');
     }
 
-    const { secure_url, public_id } = await uploadImageToCloudinary(file.buffer);
     const sortOrder = await getNextSortOrder();
 
     const doc = await FoodExploreIcon.create({
         label,
         iconUrl: secure_url,
-        publicId: public_id,
+        publicId: null,
         linkType: 'custom',
         targetPath: (meta?.link || '').trim() || undefined,
         sortOrder,
@@ -81,15 +72,15 @@ export const updateExploreIcon = async (id, payload) => {
 
     if (payload?.file?.buffer) {
         try {
-            if (doc.publicId) {
-                await cloudinary.uploader.destroy(doc.publicId).catch(() => {});
-            }
-            const { secure_url, public_id } = await uploadImageToCloudinary(payload.file.buffer);
+            const secure_url = await uploadGenericImage(payload.file.buffer, 'explore-icons');
             updates.iconUrl = secure_url;
-            updates.publicId = public_id;
+            updates.publicId = null;
         } catch (e) {
             throw new Error('Image upload failed');
         }
+    } else if (payload?.iconUrl) {
+        updates.iconUrl = String(payload.iconUrl).trim();
+        updates.publicId = null;
     }
 
     if (payload?.label !== undefined) {
@@ -116,11 +107,7 @@ export const deleteExploreIcon = async (id) => {
         return { deleted: false };
     }
     if (doc.publicId) {
-        try {
-            await cloudinary.uploader.destroy(doc.publicId);
-        } catch {
-            // ignore
-        }
+        // legacy
     }
     await doc.deleteOne();
     return { deleted: true };

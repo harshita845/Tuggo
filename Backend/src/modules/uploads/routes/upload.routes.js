@@ -1,6 +1,6 @@
 import express from 'express';
 import { upload } from '../../../middleware/upload.js';
-import { uploadFileBuffer, uploadImageBuffer, uploadVideoBuffer } from '../../../services/cloudinary.service.js';
+import { uploadFileBuffer, uploadGenericImage, uploadVideoBuffer } from '../../../services/upload.service.js';
 
 const router = express.Router();
 
@@ -18,7 +18,7 @@ router.post('/image', upload.single('file'), async (req, res, next) => {
             ? req.body.folder.trim()
             : 'uploads';
 
-        const url = await uploadImageBuffer(req.file.buffer, folder);
+        const url = await uploadGenericImage(req.file.buffer, folder);
 
         return res.status(200).json({
             success: true,

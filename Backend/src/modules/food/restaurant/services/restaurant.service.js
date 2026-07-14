@@ -1,5 +1,5 @@
 import { FoodRestaurant } from '../models/restaurant.model.js';
-import { uploadImageBuffer, uploadFileBuffer } from '../../../../services/cloudinary.service.js';
+import { uploadRestaurantImage, uploadFileBuffer } from '../../../../services/upload.service.js';
 import { ValidationError } from '../../../../core/auth/errors.js';
 import mongoose from 'mongoose';
 import { FoodZone } from '../../admin/models/zone.model.js';
@@ -296,23 +296,37 @@ export const registerRestaurant = async (payload, files) => {
     const images = {};
 
     if (files?.profileImage?.[0]) {
-        images.profileImage = await uploadImageBuffer(files.profileImage[0].buffer, 'food/restaurants/profile');
+        images.profileImage = await uploadRestaurantImage(files.profileImage[0].buffer);
+    } else if (payload?.profileImage) {
+        images.profileImage = String(payload.profileImage).trim();
     }
+    
     if (files?.panImage?.[0]) {
-        images.panImage = await uploadImageBuffer(files.panImage[0].buffer, 'food/restaurants/pan');
+        images.panImage = await uploadRestaurantImage(files.panImage[0].buffer);
+    } else if (payload?.panImage) {
+        images.panImage = String(payload.panImage).trim();
     }
+    
     if (files?.gstImage?.[0]) {
-        images.gstImage = await uploadImageBuffer(files.gstImage[0].buffer, 'food/restaurants/gst');
+        images.gstImage = await uploadRestaurantImage(files.gstImage[0].buffer);
+    } else if (payload?.gstImage) {
+        images.gstImage = String(payload.gstImage).trim();
     }
+    
     if (files?.fssaiImage?.[0]) {
-        images.fssaiImage = await uploadImageBuffer(files.fssaiImage[0].buffer, 'food/restaurants/fssai');
+        images.fssaiImage = await uploadRestaurantImage(files.fssaiImage[0].buffer);
+    } else if (payload?.fssaiImage) {
+        images.fssaiImage = String(payload.fssaiImage).trim();
     }
 
     let menuImages = [];
     if (files?.menuImages?.length) {
         menuImages = await Promise.all(
-            files.menuImages.map((file) => uploadImageBuffer(file.buffer, 'food/restaurants/menu'))
+            files.menuImages.map((file) => uploadRestaurantImage(file.buffer))
         );
+    } else if (payload?.menuImages) {
+        const payloadMenuImages = Array.isArray(payload.menuImages) ? payload.menuImages : [payload.menuImages];
+        menuImages = payloadMenuImages.map(img => String(img).trim()).filter(Boolean);
     }
 
     let menuPdf = '';
@@ -321,6 +335,8 @@ export const registerRestaurant = async (payload, files) => {
             fileName: files.menuPdf[0].originalname || 'menu.pdf',
             format: 'pdf'
         });
+    } else if (payload?.menuPdf) {
+        menuPdf = String(payload.menuPdf).trim();
     }
 
 
@@ -1110,7 +1126,7 @@ export const uploadRestaurantProfileImage = async (restaurantId, file) => {
         .lean();
     if (!currentRestaurant) throw new ValidationError('Restaurant not found');
 
-    const url = await uploadImageBuffer(file.buffer, 'food/restaurants/profile');
+    const url = await uploadRestaurantImage(file.buffer);
     const doc = await FoodRestaurant.findByIdAndUpdate(
         restaurantId,
         {
@@ -1137,7 +1153,7 @@ export const uploadRestaurantProfileImage = async (restaurantId, file) => {
 
 export const uploadRestaurantMenuImage = async (file) => {
     if (!file?.buffer) throw new ValidationError('Image file is required');
-    const url = await uploadImageBuffer(file.buffer, 'food/restaurants/menu');
+    const url = await uploadRestaurantImage(file.buffer);
     return { menuImage: { url, publicId: null } };
 };
 
@@ -1158,7 +1174,7 @@ export const uploadRestaurantCoverImages = async (restaurantId, files = []) => {
     if (!currentRestaurant) throw new ValidationError('Restaurant not found');
 
     const uploadedUrls = await Promise.all(
-        validFiles.slice(0, 20).map((file) => uploadImageBuffer(file.buffer, 'food/restaurants/cover'))
+        validFiles.slice(0, 20).map((file) => uploadRestaurantImage(file.buffer))
     );
     const existingCoverImages = Array.isArray(currentRestaurant.coverImages)
         ? currentRestaurant.coverImages.map((image) => toUrl(image)).filter(Boolean)
@@ -1217,7 +1233,7 @@ export const uploadRestaurantMenuImages = async (restaurantId, files = []) => {
     if (!currentRestaurant) throw new ValidationError('Restaurant not found');
 
     const uploadedUrls = await Promise.all(
-        validFiles.slice(0, 20).map((file) => uploadImageBuffer(file.buffer, 'food/restaurants/menu'))
+        validFiles.slice(0, 20).map((file) => uploadRestaurantImage(file.buffer))
     );
     const existingMenuImages = Array.isArray(currentRestaurant.menuImages)
         ? currentRestaurant.menuImages.map((image) => toUrl(image)).filter(Boolean)
@@ -1321,14 +1337,20 @@ export const listApprovedRestaurants = async (query = {}) => {
     if (zoneIdRaw && mongoose.Types.ObjectId.isValid(zoneIdRaw)) {
         const zoneDoc = await FoodZone.findOne({ _id: zoneIdRaw, isActive: true }).lean();
         const polygon = zoneToPolygon(zoneDoc);
+        
         if (polygon) {
-            // Strictly enforce polygon location
-            zoneFilterMatch = { location: { $geoWithin: { $geometry: polygon } } };
+            // Match restaurants that are explicitly assigned to this zone OR fall within its polygon
+            zoneFilterMatch = {
+                $or: [
+                    { zoneId: new mongoose.Types.ObjectId(zoneIdRaw) },
+                    { location: { $geoWithin: { $geometry: polygon } } }
+                ]
+            };
         } else {
-            // Fallback to zoneId matching if no polygon defined for the zone
+            // Fallback to strict zoneId matching if no polygon is defined
             zoneFilterMatch = { zoneId: new mongoose.Types.ObjectId(zoneIdRaw) };
         }
-        console.log(`[DEBUG] listApprovedRestaurants: Applied zone filter for zoneId=${zoneIdRaw}, using polygon=${!!polygon}`);
+        console.log(`[DEBUG] listApprovedRestaurants: Applied zone filter for zoneId=${zoneIdRaw}`);
     } else {
         console.log(`[DEBUG] listApprovedRestaurants: NO zone filter applied. zoneIdRaw=${zoneIdRaw}`);
     }
@@ -1338,7 +1360,10 @@ export const listApprovedRestaurants = async (query = {}) => {
     // Accept both radiusKm (preferred) and maxDistance (legacy frontend param).
     const radiusKm = toFiniteNumber(query.radiusKm) ?? toFiniteNumber(query.maxDistance);
     const sortBy = parseSortBy(query.sortBy);
-    const wantsGeo = (radiusKm !== null) || sortBy === 'nearest' || (lat !== null && lng !== null);
+    
+    // Only use $geoNear if geo filtering is explicitly needed (radiusKm), OR if there is no zone filter.
+    // If a zone filter is present, we skip $geoNear to avoid dropping restaurants that lack valid GeoJSON coordinates.
+    const wantsGeo = (radiusKm !== null) || (!zoneFilterMatch && (sortBy === 'nearest' || (lat !== null && lng !== null)));
 
     // Safety check: Prevent returning all restaurants globally if no zone and no geo constraints are provided
     if (!zoneFilterMatch && (!wantsGeo || lat === null || lng === null)) {
