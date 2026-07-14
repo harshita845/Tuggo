@@ -19,10 +19,11 @@ export const getMediaUrl = (path) => {
   if (path.startsWith('/uploads/')) {
     // API_BASE_URL is typically 'http://localhost:5000/api' or 'https://api.yourdomain.com/api/v1'
     try {
-      // In Vite, import.meta.env is available for env variables
-      const apiUrl = import.meta.env.VITE_API_URL || 'http://localhost:5000';
-      const baseUrl = new URL(apiUrl);
-      return `${baseUrl.origin}${path}`;
+      if (API_BASE_URL && API_BASE_URL.startsWith('http')) {
+        const baseUrl = new URL(API_BASE_URL);
+        return `${baseUrl.origin}${path}`;
+      }
+      throw new Error('Relative API base');
     } catch (e) {
       if (typeof window !== 'undefined') {
         if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
