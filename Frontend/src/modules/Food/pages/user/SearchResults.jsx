@@ -10,6 +10,7 @@ import { useProfile } from "@food/context/ProfileContext"
 import { useAppLocation } from "@food/hooks/useAppLocation"
 import { restaurantAPI, adminAPI } from "@food/api"
 import { useDelayedLoading } from "@food/hooks/useDelayedLoading"
+import { getRestaurantAvailabilityStatus } from "@food/utils/restaurantAvailability"
 
 const debugLog = (...args) => { }
 const debugWarn = (...args) => { }
@@ -970,20 +971,31 @@ export default function SearchResults() {
             {/* Small Restaurant Cards - Horizontal Scroll */}
             <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8 gap-3 sm:gap-4 lg:gap-5">
               {filteredRecommended.slice(0, 6).map((restaurant) => {
+                const availability = getRestaurantAvailabilityStatus(restaurant)
+                const isClosed = !availability.isOpen
+
                 return (
                   <Link
                     key={restaurant.id}
-                    to={`/user/restaurants/${restaurant.slug || restaurant.name.toLowerCase().replace(/\s+/g, '-')}`}
-                    className="block"
+                    to={isClosed ? '#' : `/user/restaurants/${restaurant.slug || restaurant.name.toLowerCase().replace(/\s+/g, '-')}`}
+                    onClick={(e) => { if (isClosed) e.preventDefault(); }}
+                    className={`block ${isClosed ? 'cursor-not-allowed' : ''}`}
                   >
-                    <div className={`group ${shouldShowGrayscale ? 'grayscale opacity-75' : ''}`}>
+                    <div className={`group ${shouldShowGrayscale || isClosed ? 'grayscale opacity-75' : ''}`}>
                       {/* Image Container */}
                       <div className="relative aspect-square rounded-xl overflow-hidden mb-2 bg-gray-200 dark:bg-gray-800">
+                        {isClosed && (
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-20">
+                            <div className="bg-gray-400/90 px-1.5 py-0.5 rounded border border-white/20">
+                              <span className="text-white font-black uppercase tracking-widest text-[8px] sm:text-[9px]">OFFLINE</span>
+                            </div>
+                          </div>
+                        )}
                         {restaurant.image ? (
                           <img
                             src={restaurant.image}
                             alt={restaurant.name}
-                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            className={`w-full h-full object-cover transition-transform duration-300 ${isClosed ? '' : 'group-hover:scale-105'}`}
                             onError={(e) => {
                               e.target.style.display = 'none'
                             }}
@@ -1040,18 +1052,32 @@ export default function SearchResults() {
             {nonRepeatedAllRestaurants.map((restaurant) => {
               const restaurantSlug = restaurant.name.toLowerCase().replace(/\s+/g, "-")
               const isFavorite = favorites.has(restaurant.id)
+              const availability = getRestaurantAvailabilityStatus(restaurant)
+              const isClosed = !availability.isOpen
 
               return (
-                <Link key={restaurant.id} to={`/user/restaurants/${restaurant.slug || restaurantSlug}`} className="h-full flex">
-                  <Card className={`overflow-hidden cursor-pointer border-0 dark:border-gray-800 group bg-white dark:bg-[#1a1a1a] shadow-md hover:shadow-xl transition-all duration-300 py-0 rounded-md flex flex-col h-full w-full ${shouldShowGrayscale ? 'grayscale opacity-75' : ''
+                <Link 
+                  key={restaurant.id} 
+                  to={isClosed ? '#' : `/user/restaurants/${restaurant.slug || restaurantSlug}`} 
+                  onClick={(e) => { if (isClosed) e.preventDefault(); }}
+                  className={`h-full flex ${isClosed ? 'cursor-not-allowed' : ''}`}
+                >
+                  <Card className={`overflow-hidden cursor-pointer border-0 dark:border-gray-800 group bg-white dark:bg-[#1a1a1a] shadow-md hover:shadow-xl transition-all duration-300 py-0 rounded-md flex flex-col h-full w-full ${shouldShowGrayscale || isClosed ? 'grayscale opacity-75' : ''
                     }`}>
                     {/* Image Section */}
                     <div className="relative h-44 sm:h-52 md:h-60 lg:h-64 xl:h-72 w-full overflow-hidden rounded-t-md flex-shrink-0 bg-gray-200 dark:bg-gray-800">
+                      {isClosed && (
+                          <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-20">
+                            <div className="bg-gray-400/90 px-3 py-1.5 rounded-lg border border-white/20">
+                              <span className="text-white font-black uppercase tracking-widest text-xs">OFFLINE</span>
+                            </div>
+                          </div>
+                      )}
                       {restaurant.image ? (
                         <img
                           src={restaurant.image}
                           alt={restaurant.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          className={`w-full h-full object-cover transition-transform duration-500 ${isClosed ? '' : 'group-hover:scale-105'}`}
                           onError={(e) => {
                             e.target.style.display = 'none'
                           }}

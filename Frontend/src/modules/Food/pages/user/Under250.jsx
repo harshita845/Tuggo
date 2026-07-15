@@ -162,8 +162,8 @@ const HorizontalMenuScroller = ({ restaurant, quantities, isClosed, handleItemCl
               />
               {isClosed && (
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-20">
-                  <div className="bg-black/80 px-3 py-1.5 rounded-lg border border-white/20">
-                    <span className="text-white font-black uppercase tracking-widest text-xs">Closed</span>
+                  <div className="bg-gray-400/90 px-3 py-1.5 rounded-lg border border-white/20">
+                    <span className="text-white font-black uppercase tracking-widest text-xs">OFFLINE</span>
                   </div>
                 </div>
               )}
@@ -237,9 +237,9 @@ const HorizontalMenuScroller = ({ restaurant, quantities, isClosed, handleItemCl
                     variant={"ghost"}
                     size="sm"
                     disabled={true}
-                    className="rounded-xl h-8 sm:h-9 md:h-10 px-4 sm:px-6 md:px-8 text-[12px] sm:text-[14px] md:text-[16px] font-bold uppercase tracking-wide bg-gray-200 dark:bg-gray-800 text-gray-500 cursor-not-allowed shadow-none"
+                    className="rounded-xl h-8 sm:h-9 md:h-10 px-4 sm:px-6 md:px-8 text-[12px] sm:text-[14px] md:text-[16px] font-bold uppercase tracking-wide bg-gray-400 dark:bg-gray-700 text-white cursor-not-allowed shadow-none"
                   >
-                    CLOSED
+                    OFFLINE
                   </Button>
                 ) : quantity > 0 ? (
                   <Link to="/user/cart" onClick={(e) => e.stopPropagation()}>
@@ -656,15 +656,6 @@ export default function Under250() {
 
   // 1. Fetch initial raw restaurant list
   useEffect(() => {
-    if (pageCache.zoneId === zoneId && pageCache.allRawRestaurants?.length > 0) {
-      setAllRawRestaurants(pageCache.allRawRestaurants);
-      setVisibleRestaurantCount(pageCache.visibleRestaurantCount || 5);
-      setUnder250Restaurants(pageCache.under250Restaurants || []);
-      fetchedIdsRef.current = new Set(pageCache.fetchedIds);
-      setHasMore(pageCache.hasMore !== undefined ? pageCache.hasMore : true);
-      setLoadingRestaurants(false);
-      return;
-    }
     let cancelled = false;
     const fetchRestaurantsList = async () => {
       try {
@@ -677,7 +668,7 @@ export default function Under250() {
         const response = await restaurantAPI.getRestaurants(params)
         const restaurantsRaw = (Array.isArray(response?.data?.data?.restaurants)
           ? response.data.data.restaurants
-          : []).filter(r => getRestaurantAvailabilityStatus(r).isOpen)
+          : [])
         
         if (!cancelled) {
           setAllRawRestaurants(restaurantsRaw)
@@ -1573,9 +1564,9 @@ export default function Under250() {
                   </div>
                   
                   {/* View Items Link */}
-                  <Link to={`/user/restaurants/${restaurantSlug}?under250=true`} className="flex-shrink-0 mt-1">
-                    <span className="text-primary font-bold text-sm md:text-base flex items-center hover:underline">
-                      View Items <ArrowRight className="h-4 w-4 ml-0.5" />
+                  <Link to={isClosed ? '#' : `/user/restaurants/${restaurantSlug}?under250=true`} className={`flex-shrink-0 mt-1 ${isClosed ? 'cursor-not-allowed opacity-50' : ''}`} onClick={(e) => { if(isClosed) e.preventDefault() }}>
+                    <span className={`font-bold text-sm md:text-base flex items-center hover:underline ${isClosed ? 'text-gray-500' : 'text-primary'}`}>
+                      {isClosed ? 'Offline' : 'View Items'} <ArrowRight className="h-4 w-4 ml-0.5" />
                     </span>
                   </Link>
                 </div>
@@ -1997,7 +1988,7 @@ export default function Under250() {
       </AnimatePresence>
 
       {/* Add to Cart Animation */}
-      <ScrollAwareAddToCartAnimation />
+      {!showScanAnimation && <ScrollAwareAddToCartAnimation />}
     </div>
   )
 }

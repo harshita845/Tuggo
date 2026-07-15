@@ -2308,7 +2308,7 @@ function RestaurantDetailsContent() {
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              className={`absolute -bottom-3 sm:-bottom-4 left-1/2 -translate-x-1/2 rounded-full h-8 sm:h-9 md:h-10 px-3 sm:px-4 flex items-center justify-between gap-3 min-w-[90px] md:min-w-[100px] z-10 transition-all duration-300 ${shouldShowGrayscale
+              className={`absolute -bottom-3 sm:-bottom-4 left-1/2 -translate-x-1/2 rounded-full h-8 sm:h-9 md:h-10 px-3 sm:px-4 flex items-center justify-between gap-3 min-w-[90px] md:min-w-[100px] z-10 transition-all duration-300 ${shouldShowGrayscale || isRestaurantOffline
                   ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50 shadow-none border border-gray-300'
                   : 'shadow-[0_4px_14px_0_rgba(0,183,97,0.39)] bg-[#00B761] hover:bg-[#00A055] text-white'
                 }`}
@@ -2316,12 +2316,12 @@ function RestaurantDetailsContent() {
               <button
                 onClick={(e) => {
                   e.stopPropagation()
-                  if (!shouldShowGrayscale) {
+                  if (!shouldShowGrayscale && !isRestaurantOffline) {
                     updateItemQuantity(item, Math.max(0, quantity - 1), e)
                   }
                 }}
-                disabled={shouldShowGrayscale}
-                className={shouldShowGrayscale ? 'text-gray-500 cursor-not-allowed' : 'text-white hover:text-white/80 active:scale-90 transition-transform'}
+                disabled={shouldShowGrayscale || isRestaurantOffline}
+                className={shouldShowGrayscale || isRestaurantOffline ? 'text-gray-500 cursor-not-allowed' : 'text-white hover:text-white/80 active:scale-90 transition-transform'}
               >
                 <Minus size={16} className="stroke-[3px]" />
               </button>
@@ -2329,32 +2329,34 @@ function RestaurantDetailsContent() {
               <button
                 onClick={(e) => {
                   e.stopPropagation()
-                  if (!shouldShowGrayscale) {
+                  if (!shouldShowGrayscale && !isRestaurantOffline) {
                     updateItemQuantity(item, quantity + 1, e)
                   }
                 }}
-                disabled={shouldShowGrayscale}
-                className={shouldShowGrayscale ? 'text-gray-500 cursor-not-allowed' : 'text-white hover:text-white/80 active:scale-90 transition-transform'}
+                disabled={shouldShowGrayscale || isRestaurantOffline}
+                className={shouldShowGrayscale || isRestaurantOffline ? 'text-gray-500 cursor-not-allowed' : 'text-white hover:text-white/80 active:scale-90 transition-transform'}
               >
                 <Plus size={16} className="stroke-[3px]" />
               </button>
             </motion.div>
           ) : (
             <motion.button
-              whileTap={shouldShowGrayscale ? {} : { scale: 0.95 }}
+              whileTap={shouldShowGrayscale || isRestaurantOffline ? {} : { scale: 0.95 }}
               onClick={(e) => {
                 e.stopPropagation()
-                if (!shouldShowGrayscale) {
+                if (!shouldShowGrayscale && !isRestaurantOffline) {
                   updateItemQuantity(item, 1, e)
                 }
               }}
-              disabled={shouldShowGrayscale}
-              className={`absolute -bottom-3 sm:-bottom-4 left-1/2 -translate-x-1/2 rounded-full h-8 sm:h-9 md:h-10 px-5 sm:px-7 text-[12px] sm:text-[14px] md:text-[16px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap min-w-[90px] md:min-w-[100px] z-10 ${shouldShowGrayscale
-                ? 'bg-gray-200 dark:bg-gray-800 text-gray-500 cursor-not-allowed opacity-50 shadow-none border border-gray-300'
+              disabled={shouldShowGrayscale || isRestaurantOffline}
+              className={`absolute -bottom-3 sm:-bottom-4 left-1/2 -translate-x-1/2 rounded-full h-8 sm:h-9 md:h-10 px-5 sm:px-7 text-[12px] sm:text-[14px] md:text-[16px] font-black uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-1 sm:gap-1.5 whitespace-nowrap min-w-[90px] md:min-w-[100px] z-10 ${shouldShowGrayscale || isRestaurantOffline
+                ? 'bg-gray-400 dark:bg-gray-700 text-white cursor-not-allowed shadow-none border border-gray-400/20'
                 : 'bg-[var(--primary)] hover:opacity-90 text-white shadow-md border border-[var(--primary)]/20'
                 }`}
             >
-              ADD <span className="text-[16px] sm:text-[18px] md:text-[20px] font-medium leading-none mt-[-2px]">+</span>
+              {isRestaurantOffline ? "OFFLINE" : (
+                <>ADD <span className="text-[16px] sm:text-[18px] md:text-[20px] font-medium leading-none mt-[-2px]">+</span></>
+              )}
             </motion.button>
           )}
         </div>
@@ -2572,7 +2574,11 @@ function RestaurantDetailsContent() {
                     <h1 className="text-2xl font-bold text-gray-900 dark:text-white truncate">
                       {restaurant?.name || "Unknown Restaurant"}
                     </h1>
-                    <Info className="h-5 w-5 text-gray-400" />
+                    {isRestaurantOffline && (
+                      <span className="inline-flex rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-widest shadow-sm bg-gray-400 text-white whitespace-nowrap flex-shrink-0">
+                        Offline Menu
+                      </span>
+                    )}
                   </div>
                   <div className="mt-1 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
                     <Utensils className="h-4 w-4" />
@@ -2751,6 +2757,14 @@ function RestaurantDetailsContent() {
                       )}
                     </Button>
                   )}
+                  <Button
+                    className="bg-orange-500 hover:bg-orange-600 text-white flex items-center gap-1.5 shadow-[0_4px_12px_rgba(255,102,0,0.4)] border border-white/20 rounded-full font-bold transform transition-all duration-300 active:scale-95 group ml-1"
+                    size="sm"
+                    onClick={() => setShowMenuSheet(true)}
+                  >
+                    <Utensils className="h-3.5 w-3.5 text-white group-hover:rotate-12 transition-transform" />
+                    <span className="tracking-widest text-xs uppercase">Tuggo</span>
+                  </Button>
                 </div>
               </div>
 
@@ -3021,37 +3035,7 @@ function RestaurantDetailsContent() {
         </div>
       )}
 
-      {typeof window !== "undefined" &&
-        !showFilterSheet && !showMenuSheet && !showMenuOptionsSheet &&
-        createPortal(
-          <motion.div
-            drag
-            dragMomentum={false}
-            dragConstraints={
-              typeof window !== "undefined"
-                ? {
-                  top: -(window.innerHeight - 150),
-                  left: -(window.innerWidth - 150),
-                  right: 20,
-                  bottom: 50,
-                }
-                : undefined
-            }
-            whileDrag={{ scale: 1.1, zIndex: 100 }}
-            whileHover={{ scale: 1.05 }}
-            className="fixed bottom-24 right-6 z-[60] pointer-events-auto sm:bottom-8 cursor-grab active:cursor-grabbing"
-          >
-            <Button
-              className="bg-orange-500 hover:bg-orange-600 text-white flex items-center gap-2 shadow-[0_12px_40px_rgba(255,102,0,0.4)] border border-white/20 px-6 py-3.5 h-auto rounded-full font-bold transform transition-all duration-300 active:scale-95 group"
-              size="lg"
-              onClick={() => setShowMenuSheet(true)}
-            >
-              <Utensils className="h-4 w-4 text-white group-hover:rotate-12 transition-transform" />
-              <span className="tracking-widest text-xs uppercase">Tuggo</span>
-            </Button>
-          </motion.div>,
-          document.body
-        )}
+
 
       {/* Menu Categories Bottom Sheet - Rendered via Portal */}
       {typeof window !== "undefined" &&
@@ -4208,7 +4192,7 @@ function RestaurantDetailsContent() {
         )}
 
       {/* Add to Cart Animation Component - Rendered via Portal to prevent transform interference */}
-      {typeof window !== "undefined" &&
+      {typeof window !== "undefined" && !showScanAnimation &&
         createPortal(
           <AddToCartAnimation
             bottomOffset={80}

@@ -53,8 +53,7 @@ function HomeRestaurantCard({
 
   const availability = getRestaurantAvailabilityStatus(
     restaurantForAvailability,
-    new Date(),
-    { ignoreOperationalStatus: true },
+    new Date()
   );
 
   const restaurantSlug = resolveRestaurantSlug(restaurant, index);

@@ -21,6 +21,7 @@ import { useAppLocation } from "@food/hooks/useAppLocation"
 import { useDelayedLoading } from "@food/hooks/useDelayedLoading"
 import { getMenuFromResponse } from "@food/utils/menuItems"
 import { normalizeImageUrl } from "@food/utils/common"
+import { getRestaurantAvailabilityStatus } from "@food/utils/restaurantAvailability"
 
 // Filter options
 const filterOptions = [
@@ -1409,16 +1410,20 @@ export default function CategoryPage() {
               {/* Dishes List - Horizontal Cards */}
               <div className="flex flex-col gap-3 md:gap-4">
                 {filteredRecommended.slice(0, visibleCount).map((restaurant) => {
+                  const availability = getRestaurantAvailabilityStatus(restaurant)
+                  const isClosed = !availability.isOpen
+
                   return (
                     <Link
                       key={restaurant.id}
-                      to={buildRestaurantLink(restaurant)}
-                      className="block w-full"
+                      to={isClosed ? '#' : buildRestaurantLink(restaurant)}
+                      onClick={(e) => { if (isClosed) e.preventDefault(); }}
+                      className={`block w-full ${isClosed ? 'cursor-not-allowed' : ''}`}
                     >
                       <motion.div
-                        whileHover={{ scale: 1.01 }}
-                        whileTap={{ scale: 0.98 }}
-                        className={`flex gap-3 md:gap-4 bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-gray-800 p-2 md:p-3 rounded-2xl md:rounded-3xl shadow-sm hover:shadow-md transition-all duration-300 ${shouldShowGrayscale ? 'grayscale opacity-75' : ''}`}
+                        whileHover={isClosed ? {} : { scale: 1.01 }}
+                        whileTap={isClosed ? {} : { scale: 0.98 }}
+                        className={`flex gap-3 md:gap-4 bg-white dark:bg-[#1a1a1a] border border-gray-100 dark:border-gray-800 p-2 md:p-3 rounded-2xl md:rounded-3xl shadow-sm transition-all duration-300 ${isClosed ? '' : 'hover:shadow-md'} ${shouldShowGrayscale || isClosed ? 'grayscale opacity-75' : ''}`}
                       >
                         {/* Image Container */}
                         <div className="relative w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-xl md:rounded-2xl overflow-hidden flex-shrink-0 bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700">
@@ -1426,6 +1431,14 @@ export default function CategoryPage() {
                           <div className="absolute top-1.5 left-1.5 z-10 bg-white/90 backdrop-blur-sm rounded-sm p-0.5 border border-gray-200">
                             <div className={`w-2.5 h-2.5 md:w-3 md:h-3 rounded-full ${restaurant.categoryDishFoodType === 'Veg' ? 'bg-green-500' : 'bg-red-500'}`} />
                           </div>
+
+                          {isClosed && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-20">
+                              <div className="bg-gray-400/90 px-2 py-1 md:px-3 md:py-1.5 rounded-lg border border-white/20">
+                                <span className="text-white font-black uppercase tracking-widest text-[10px] md:text-xs">OFFLINE</span>
+                              </div>
+                            </div>
+                          )}
 
                           {restaurant.categoryDishImage ? (
                             <img
@@ -1508,19 +1521,30 @@ export default function CategoryPage() {
             <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5 lg:gap-6 xl:gap-7 items-stretch ${showRestaurantSkeleton ? 'opacity-50' : 'opacity-100'} transition-opacity duration-300`}>
               {filteredAllRestaurants.slice(0, visibleCount).map((restaurant) => {
                 const isFavorite = favorites.has(restaurant.id)
+                const availability = getRestaurantAvailabilityStatus(restaurant)
+                const isClosed = !availability.isOpen
 
                 return (
-                  <Link key={restaurant.id} to={buildRestaurantLink(restaurant)} className="h-full flex">
+                  <Link key={restaurant.id} to={isClosed ? '#' : buildRestaurantLink(restaurant)} onClick={(e) => { if (isClosed) e.preventDefault(); }} className={`h-full flex ${isClosed ? 'cursor-not-allowed' : ''}`}>
                     <motion.div
-                      whileHover={{ scale: 1.02, y: -6 }}
-                      whileTap={{ scale: 0.98 }}
+                      whileHover={isClosed ? {} : { scale: 1.02, y: -6 }}
+                      whileTap={isClosed ? {} : { scale: 0.98 }}
                       transition={{ type: "spring", stiffness: 300, damping: 20 }}
                       className="h-full w-full flex"
                     >
-                      <Card className={`overflow-hidden cursor-pointer gap-0 border border-gray-100 dark:border-gray-800 group bg-white dark:bg-[#1a1a1a] shadow-md hover:shadow-xl transition-all duration-300 py-0 rounded-2xl h-full flex flex-col w-full ${shouldShowGrayscale ? 'grayscale opacity-75' : ''
+                      <Card className={`overflow-hidden gap-0 border border-gray-100 dark:border-gray-800 group bg-white dark:bg-[#1a1a1a] shadow-md transition-all duration-300 py-0 rounded-2xl h-full flex flex-col w-full ${isClosed ? 'cursor-not-allowed' : 'cursor-pointer hover:shadow-xl'} ${shouldShowGrayscale || isClosed ? 'grayscale opacity-75' : ''
                         }`}>
                         {/* Image Section */}
                         <div className="relative h-44 sm:h-52 md:h-60 lg:h-64 xl:h-72 w-full overflow-hidden rounded-t-2xl flex-shrink-0">
+                          
+                          {isClosed && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-20">
+                              <div className="bg-gray-400/90 px-3 py-1.5 rounded-lg border border-white/20">
+                                <span className="text-white font-black uppercase tracking-widest text-xs">OFFLINE</span>
+                              </div>
+                            </div>
+                          )}
+
                           {/* Use category dish image if available, otherwise restaurant image */}
                           {restaurant.categoryDishImage ? (
                             <img

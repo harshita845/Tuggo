@@ -26,7 +26,7 @@ const parseTimeToMinutes = (timeValue) => {
   if (!raw) return null
 
   const normalized = raw.toLowerCase()
-  const meridiemMatch = normalized.match(/^(\d{1,2}):(\d{2})\s*([ap]m)$/)
+  const meridiemMatch = normalized.match(/^(\d{1,2}):(\d{2})(?::\d{2})?\s*([ap]m)$/)
   if (meridiemMatch) {
     let hour = Number(meridiemMatch[1])
     const minute = Number(meridiemMatch[2])
@@ -40,7 +40,7 @@ const parseTimeToMinutes = (timeValue) => {
     return hour * 60 + minute
   }
 
-  const twentyFourHourMatch = normalized.match(/^(\d{1,2}):(\d{2})$/)
+  const twentyFourHourMatch = normalized.match(/^(\d{1,2}):(\d{2})(?::\d{2})?$/)
   if (!twentyFourHourMatch) return null
 
   const hour = Number(twentyFourHourMatch[1])

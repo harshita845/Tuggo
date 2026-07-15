@@ -2527,6 +2527,8 @@ export async function updateRestaurantById(id, body = {}) {
 
     if (body.isAcceptingOrders !== undefined) {
         doc.isAcceptingOrders = parseBooleanLike(body.isAcceptingOrders, 'isAcceptingOrders');
+    } else if (body.isActive !== undefined) {
+        doc.isAcceptingOrders = parseBooleanLike(body.isActive, 'isActive');
     }
 
     if (body.cuisines !== undefined) {

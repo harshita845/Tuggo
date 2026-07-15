@@ -3,7 +3,7 @@ import { useLocation, useNavigate, Link } from 'react-router-dom';
 import { useCart } from "@food/context/CartContext";
 import { useEffect, useRef, useState } from 'react';
 import { gsap } from 'gsap';
-import { Trash2, ChevronRight } from 'lucide-react';
+import { Trash2, ChevronRight, ShoppingCart } from 'lucide-react';
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
 const debugError = (...args) => {}
@@ -44,14 +44,11 @@ export default function AddToCartAnimation({
   const restaurantImage = cart[0]?.image || "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=200&h=200&fit=crop";
   const restaurantSlug = restaurantName.toLowerCase().replace(/\s+/g, "-");
 
-  // Hide pill on cart pages, order pages, and account page (if enabled)
-  const iscartPage = location.pathname === '/cart' ||
-    location.pathname === '/user/cart' ||
-    location.pathname.startsWith('/cart/') ||
-    location.pathname.startsWith('/user/cart/');
-  const isOrderPage = location.pathname.startsWith('/orders/');
-  const isAccountPage = location.pathname === '/account';
-  const shouldHidePill = hideOnPages && (iscartPage || isOrderPage || isAccountPage);
+  // Hide pill on cart pages, home page, and profile page
+  const iscartPage = location.pathname.includes('/cart');
+  const isHomePage = location.pathname === '/food/user' || location.pathname === '/food/user/' || location.pathname === '/' || location.pathname === '/user' || location.pathname === '/user/';
+  const isProfilePage = location.pathname.includes('/profile') || location.pathname.includes('/account');
+  const shouldHidePill = hideOnPages && (iscartPage || isHomePage || isProfilePage);
 
   // Handle removal animation when product is removed
   useEffect(() => {
@@ -447,80 +444,36 @@ export default function AddToCartAnimation({
             }}
             style={{
               position: 'fixed',
-              bottom: dynamicBottom ? undefined : `${bottomOffset || 20}px`,
+              bottom: dynamicBottom ? undefined : `${bottomOffset || 16}px`,
               pointerEvents: 'none',
             }}
-            className={`left-0 right-0 z-[9999] flex justify-center px-4 pb-4 md:pb-6 transition-all duration-300 ease-in-out bg-transparent pointer-events-none ${dynamicBottom || ''}`}
+            className={`left-0 right-0 z-[9999] flex justify-center px-4 transition-all duration-300 ease-in-out bg-transparent pointer-events-none ${dynamicBottom || ''}`}
           >
-            {/* The main container - New Design (StickyCartCard style) */}
-            <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] p-2.5 md:p-3 flex items-center gap-2.5 md:gap-3 border border-gray-100 pointer-events-auto mx-auto w-full max-w-[95vw] md:max-w-sm">
+            {/* The main container - New Floating Pill Design */}
+            <motion.button
+              ref={linkRef}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                navigate(linkTo);
+              }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              animate={{ boxShadow: ["0px 4px 15px rgba(255,102,0,0.3)", "0px 4px 25px rgba(255,102,0,0.6)", "0px 4px 15px rgba(255,102,0,0.3)"] }}
+              transition={{ boxShadow: { duration: 2, repeat: Infinity, ease: "easeInOut" } }}
+              className="pointer-events-auto bg-orange-500 hover:bg-orange-600 border border-white/20 text-white rounded-full flex items-center justify-between pl-2 pr-3 py-1.5 min-w-[130px] mx-auto"
+            >
+              <div className="flex items-center justify-center bg-white/20 p-1.5 rounded-full mr-2.5">
+                <ShoppingCart className="h-3.5 w-3.5 text-white" />
+              </div>
               
-              {/* Item Images Stack */}
-              <div className="flex -space-x-3 md:-space-x-4 flex-shrink-0 ml-1">
-                {cart.slice(0, 3).map((item, i) => (
-                  <div 
-                    key={item.id || i} 
-                    className="w-11 h-11 md:w-12 md:h-12 rounded-full overflow-hidden border-2 border-white shadow-sm bg-white"
-                    style={{ zIndex: 10 - i }}
-                  >
-                    <img
-                      src={item.image || item.imageUrl || restaurantImage}
-                      alt={item.name || "Item"}
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                ))}
-                {cart.length > 3 && (
-                  <div 
-                    className="w-11 h-11 md:w-12 md:h-12 rounded-full bg-gray-50 border-2 border-white flex items-center justify-center text-[11px] font-bold text-gray-500 shadow-sm"
-                    style={{ zIndex: 10 - 3 }}
-                  >
-                    +{cart.length - 3}
-                  </div>
-                )}
+              <div className="flex flex-col flex-1 text-center items-center">
+                <span className="font-bold text-[13px] leading-tight">Cart</span>
+                <span className="text-[9px] font-medium opacity-90">{itemCount} {itemCount === 1 ? 'item' : 'items'}</span>
               </div>
-
-              {/* Restaurant Info */}
-              <div className="flex-1 min-w-0 flex flex-col justify-center py-1">
-                <h3 className="font-bold text-gray-900 text-sm md:text-[15px] line-clamp-1 leading-tight mb-1">
-                  {restaurantName}
-                </h3>
-                <button 
-                  onClick={(e) => { e.preventDefault(); e.stopPropagation(); navigate(`/food/user/restaurants/${restaurantSlug}`); }}
-                  className="bg-[#fff0e6] text-[#ff7a29] rounded-full px-2.5 py-0.5 text-[10px] md:text-[11px] font-bold inline-flex items-center gap-0.5 w-fit hover:bg-orange-100 transition-colors"
-                >
-                  Menu <ChevronRight className="w-3 h-3" />
-                </button>
-              </div>
-
-              {/* Checkout Button (Green) */}
-              <motion.button
-                ref={linkRef}
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  navigate(linkTo);
-                }}
-                className="bg-[#1da05c] hover:bg-[#188c50] text-white rounded-2xl px-3.5 py-1.5 md:py-2 flex flex-col items-center justify-center shadow-sm transition-colors flex-shrink-0 min-w-[100px] md:min-w-[110px]"
-              >
-                <span className="text-[10px] md:text-[11px] font-medium text-white/90 leading-tight mb-0.5">
-                  {itemCount} {itemCount === 1 ? 'item' : 'items'} | ₹{total}
-                </span>
-                <span className="text-[14px] md:text-[15px] font-bold leading-tight">Checkout</span>
-              </motion.button>
-
-              {/* Delete/Clear Cart Button (Pink) */}
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  clearCart();
-                }}
-                className="bg-[#ffe8ea] hover:bg-[#ffd1d6] text-[#ff4b5c] rounded-2xl p-2.5 md:p-3 flex items-center justify-center transition-colors flex-shrink-0 mr-1"
-              >
-                <Trash2 className="w-[18px] h-[18px] md:w-5 md:h-5" />
-              </button>
-            </div>
+              
+              <ChevronRight className="h-4 w-4 text-white ml-1.5" />
+            </motion.button>
           </motion.div>
         )}
       </AnimatePresence>
