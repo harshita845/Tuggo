@@ -7,7 +7,7 @@ import { adminSidebarMenu } from "../../../utils/adminSidebarMenu.js";
 export default function SubAdminForm({ subAdmin, onClose }) {
   const isEditing = !!subAdmin;
   const [loading, setLoading] = useState(false);
-  
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -37,16 +37,16 @@ export default function SubAdminForm({ subAdmin, onClose }) {
     adminSidebarMenu.forEach((item) => {
       if (item.type === "section") {
         labels.push({ type: "section", label: item.label });
-        item.items?.forEach((subItem) => {
-          if (subItem.type === "expandable") {
+        item.items?.forEach((suTuggom) => {
+          if (suTuggom.type === "expandable") {
             // Include main parent
-            labels.push({ type: "item", label: subItem.label });
+            labels.push({ type: "item", label: suTuggom.label });
             // Include sub items for granular permissions
-            subItem.subItems?.forEach((deepSubItem) => {
-              labels.push({ type: "sub-item", label: deepSubItem.label, parent: subItem.label });
+            suTuggom.suTuggoms?.forEach((deepSuTuggom) => {
+              labels.push({ type: "sub-item", label: deepSuTuggom.label, parent: suTuggom.label });
             });
           } else {
-            labels.push({ type: "item", label: subItem.label });
+            labels.push({ type: "item", label: suTuggom.label });
           }
         });
       } else {
@@ -143,7 +143,7 @@ export default function SubAdminForm({ subAdmin, onClose }) {
               <h2 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
                 Basic Details
               </h2>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">
                   Name *
@@ -250,8 +250,8 @@ export default function SubAdminForm({ subAdmin, onClose }) {
                   }}
                   className="text-sm text-[#11b5b8] hover:text-teal-700 font-medium"
                 >
-                  {accessibleModules.length > 0 && accessibleModules.length === menuItems.filter(i => i.type === 'item').length 
-                    ? "Deselect All" 
+                  {accessibleModules.length > 0 && accessibleModules.length === menuItems.filter(i => i.type === 'item').length
+                    ? "Deselect All"
                     : "Select All"}
                 </button>
               </div>
@@ -269,18 +269,17 @@ export default function SubAdminForm({ subAdmin, onClose }) {
                   }
 
                   const isChecked = accessibleModules.includes(item.label);
-                  const isSubItem = item.type === "sub-item";
+                  const isSuTuggom = item.type === "sub-item";
 
                   return (
                     <div
                       key={index}
-                      className={`flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-colors cursor-pointer ${
-                        isSubItem ? "ml-8 border-l-2 border-l-gray-200 rounded-l-none" : ""
-                      }`}
+                      className={`flex items-center justify-between p-3 rounded-lg hover:bg-gray-50 border border-transparent hover:border-gray-100 transition-colors cursor-pointer ${isSuTuggom ? "ml-8 border-l-2 border-l-gray-200 rounded-l-none" : ""
+                        }`}
                       onClick={() => handleToggleModule(item.label)}
                     >
-                      <span className={`${isSubItem ? "text-gray-600 text-sm" : "text-gray-700 font-medium"}`}>
-                        {isSubItem && <span className="text-gray-300 mr-2">↳</span>}
+                      <span className={`${isSuTuggom ? "text-gray-600 text-sm" : "text-gray-700 font-medium"}`}>
+                        {isSuTuggom && <span className="text-gray-300 mr-2">↳</span>}
                         {item.label}
                       </span>
                       <div className="relative inline-flex items-center">
@@ -290,7 +289,7 @@ export default function SubAdminForm({ subAdmin, onClose }) {
                           checked={isChecked}
                           readOnly
                         />
-                        <div className={`w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all ${isSubItem ? "peer-checked:bg-teal-500 scale-90" : "peer-checked:bg-[#11b5b8]"}`}></div>
+                        <div className={`w-9 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all ${isSuTuggom ? "peer-checked:bg-teal-500 scale-90" : "peer-checked:bg-[#11b5b8]"}`}></div>
                       </div>
                     </div>
                   );

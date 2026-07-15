@@ -53,9 +53,9 @@ import { adminSidebarMenu } from "@food/utils/adminSidebarMenu"
 import { getCachedSettings, loadBusinessSettings } from "@food/utils/businessSettings"
 import quickSpicyLogo from "@food/assets/quicky-spicy-logo.png"
 import { adminAPI } from "@food/api"
-const debugLog = (...args) => {}
-const debugWarn = (...args) => {}
-const debugError = (...args) => {}
+const debugLog = (...args) => { }
+const debugWarn = (...args) => { }
+const debugError = (...args) => { }
 
 
 // Icon mapping
@@ -114,7 +114,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
       try {
         const userStr = localStorage.getItem('admin_user');
         if (userStr) setAdminUser(JSON.parse(userStr));
-      } catch (e) {}
+      } catch (e) { }
     }
     loadAdminUser()
     window.addEventListener('adminAuthChanged', loadAdminUser)
@@ -233,11 +233,11 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
         }
       }
     }
-    
+
     // Listen for themeLoaded
     const handleThemeLoaded = () => {
-       const adminLogo = localStorage.getItem('admin_app_logo');
-       if (adminLogo) setLogoUrl(adminLogo);
+      const adminLogo = localStorage.getItem('admin_app_logo');
+      if (adminLogo) setLogoUrl(adminLogo);
     };
 
     window.addEventListener('businessSettingsUpdated', handleSettingsUpdate)
@@ -271,9 +271,9 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
     const state = {}
     adminSidebarMenu.forEach((item) => {
       if (item.type === "section") {
-        item.items.forEach((subItem) => {
-          if (subItem.type === "expandable") {
-            state[subItem.label.toLowerCase().replace(/\s+/g, "")] = false
+        item.items.forEach((suTuggom) => {
+          if (suTuggom.type === "expandable") {
+            state[suTuggom.label.toLowerCase().replace(/\s+/g, "")] = false
           }
         })
       }
@@ -320,20 +320,20 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
       sourceMenu = []
       adminSidebarMenu.forEach((item) => {
         if (item.type === "section") {
-          const filteredItems = item.items.reduce((acc, subItem) => {
-            if (subItem.type === "expandable") {
+          const filteredItems = item.items.reduce((acc, suTuggom) => {
+            if (suTuggom.type === "expandable") {
               // Check if they have the main parent permission OR any specific sub-permission
-              const allowedSubItems = (subItem.subItems || []).filter(si => 
-                allowed.includes(subItem.label) || allowed.includes(si.label)
+              const allowedSuTuggoms = (suTuggom.suTuggoms || []).filter(si =>
+                allowed.includes(suTuggom.label) || allowed.includes(si.label)
               )
-              if (allowedSubItems.length > 0) {
-                acc.push({ ...subItem, subItems: allowedSubItems })
-              } else if (allowed.includes(subItem.label)) {
+              if (allowedSuTuggoms.length > 0) {
+                acc.push({ ...suTuggom, suTuggoms: allowedSuTuggoms })
+              } else if (allowed.includes(suTuggom.label)) {
                 // If no specific sub-items allowed but parent is allowed, show all (backwards compatibility)
-                acc.push(subItem)
+                acc.push(suTuggom)
               }
-            } else if (allowed.includes(subItem.label)) {
-              acc.push(subItem)
+            } else if (allowed.includes(suTuggom.label)) {
+              acc.push(suTuggom)
             }
             return acc
           }, [])
@@ -363,21 +363,21 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
       } else if (item.type === "section") {
         const filteredItems = []
 
-        item.items.forEach((subItem) => {
-          if (subItem.type === "link") {
-            if (subItem.label.toLowerCase().includes(query)) {
-              filteredItems.push(subItem)
+        item.items.forEach((suTuggom) => {
+          if (suTuggom.type === "link") {
+            if (suTuggom.label.toLowerCase().includes(query)) {
+              filteredItems.push(suTuggom)
             }
-          } else if (subItem.type === "expandable") {
-            const matchesLabel = subItem.label.toLowerCase().includes(query)
-            const matchingSubItems = subItem.subItems?.filter(
+          } else if (suTuggom.type === "expandable") {
+            const matchesLabel = suTuggom.label.toLowerCase().includes(query)
+            const matchingSuTuggoms = suTuggom.suTuggoms?.filter(
               (si) => si.label.toLowerCase().includes(query)
             ) || []
 
-            if (matchesLabel || matchingSubItems.length > 0) {
+            if (matchesLabel || matchingSuTuggoms.length > 0) {
               filteredItems.push({
-                ...subItem,
-                subItems: matchesLabel ? subItem.subItems : matchingSubItems,
+                ...suTuggom,
+                suTuggoms: matchesLabel ? suTuggom.suTuggoms : matchingSuTuggoms,
               })
             }
           }
@@ -405,15 +405,15 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
 
         adminSidebarMenu.forEach((item) => {
           if (item.type === "section") {
-            item.items.forEach((subItem) => {
-              if (subItem.type === "expandable") {
-                const matchesLabel = subItem.label.toLowerCase().includes(query)
-                const hasMatchingSubItems = subItem.subItems?.some(
+            item.items.forEach((suTuggom) => {
+              if (suTuggom.type === "expandable") {
+                const matchesLabel = suTuggom.label.toLowerCase().includes(query)
+                const hasMatchingSuTuggoms = suTuggom.suTuggoms?.some(
                   (si) => si.label.toLowerCase().includes(query)
                 )
 
-                if (matchesLabel || hasMatchingSubItems) {
-                  const sectionKey = subItem.label.toLowerCase().replace(/\s+/g, "")
+                if (matchesLabel || hasMatchingSuTuggoms) {
+                  const sectionKey = suTuggom.label.toLowerCase().replace(/\s+/g, "")
                   newExpandedState[sectionKey] = true
                 }
               }
@@ -436,7 +436,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
       return currentPath === targetPath
     }
 
-    // For subItems, check if this is the most specific match
+    // For suTuggoms, check if this is the most specific match
     if (allPaths.length > 0) {
       // Sort paths by length (longest first) to find most specific match
       const sortedPaths = [...allPaths].sort((a, b) => b.length - a.length)
@@ -499,9 +499,9 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
             "flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all duration-300 ease-out menu-item-animate text-left",
             isInSection ? "text-base font-bold" : "text-base font-bold",
             item.label === "Log out" ? "text-red-500 hover:bg-red-500/10 hover:text-red-400" :
-            isActive(item.path)
-              ? "bg-white/10 text-white border border-white/15"
-              : "text-neutral-100 hover:bg-white/5 hover:text-white",
+              isActive(item.path)
+                ? "bg-white/10 text-white border border-white/15"
+                : "text-neutral-100 hover:bg-white/5 hover:text-white",
             isCollapsed && "justify-center px-2"
           )}
           style={{ animationDelay: `${index * 0.05}s` }}
@@ -580,14 +580,14 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
               <ChevronDown className="w-4 h-4 shrink-0 text-neutral-300" />
             </div>
           </button>
-          {isExpanded && item.subItems && (
+          {isExpanded && item.suTuggoms && (
             <div className="ml-5 mt-1 space-y-1 border-neutral-800/60 pl-3 submenu-animate overflow-hidden">
-              {item.subItems.map((subItem, subIndex) => {
-                const allSubPaths = item.subItems.map(si => si.path)
+              {item.suTuggoms.map((suTuggom, subIndex) => {
+                const allSubPaths = item.suTuggoms.map(si => si.path)
                 return (
                   <Link
-                    key={subItem.path || subItem.label}
-                    to={subItem.path}
+                    key={suTuggom.path || suTuggom.label}
+                    to={suTuggom.path}
                     onClick={() => {
                       if (window.innerWidth < 1024 && onClose) {
                         onClose()
@@ -595,7 +595,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
                     }}
                     className={cn(
                       "flex items-center gap-2 px-3 py-1.5 rounded-md transition-all duration-300 ease-out text-base font-bold text-left",
-                      isActive(subItem.path, allSubPaths)
+                      isActive(suTuggom.path, allSubPaths)
                         ? "bg-white/10 text-white"
                         : "text-neutral-100 hover:bg-white/5 hover:text-white"
                     )}
@@ -603,12 +603,12 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
                   >
                     <span className={cn(
                       "w-1.5 h-1.5 rounded-full shrink-0 transition-all duration-300",
-                      isActive(subItem.path, allSubPaths) ? "bg-white scale-125" : "bg-neutral-400"
+                      isActive(suTuggom.path, allSubPaths) ? "bg-white scale-125" : "bg-neutral-400"
                     )}></span>
-                    <span className="text-left flex-1">{subItem.label}</span>
-                    {getBadgeCount(subItem.label, subItem.path) > 0 && (
+                    <span className="text-left flex-1">{suTuggom.label}</span>
+                    {getBadgeCount(suTuggom.label, suTuggom.path) > 0 && (
                       <span className="shrink-0 bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1 min-w-[18px] text-center">
-                        {getBadgeCount(subItem.label, subItem.path) > 99 ? "99+" : getBadgeCount(subItem.label, subItem.path)}
+                        {getBadgeCount(suTuggom.label, suTuggom.path) > 99 ? "99+" : getBadgeCount(suTuggom.label, suTuggom.path)}
                       </span>
                     )}
                   </Link>
@@ -705,7 +705,7 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
         style={{ backgroundColor: 'var(--ad-primary, #576574)' }}
       >
         {/* Header with Logo and Brand */}
-        <div 
+        <div
           className="shrink-0 px-3 py-3 border-b border-neutral-700/30 animate-[fadeIn_0.4s_ease-out] bg-[#4a5664]"
           style={{ backgroundColor: 'var(--ad-primary-strong, #4a5664)' }}
         >
@@ -840,23 +840,23 @@ export default function AdminSidebar({ isOpen = false, onClose, onCollapseChange
                     )}
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
-                      <div className="px-3 py-2 mb-2 flex items-center justify-between">
-                        <span className="text-neutral-300 font-semibold text-base text-left">
-                          {item.label}
-                        </span>
-                        {item.items.some(subItem => {
-                          const count = getBadgeCount(subItem.label, subItem.path);
-                          if (count > 0) return true;
-                          if (subItem.type === "expandable" && subItem.subItems) {
-                            return subItem.subItems.some(si => getBadgeCount(si.label, si.path) > 0);
-                          }
-                          return false;
-                        }) && (
+                    <div className="px-3 py-2 mb-2 flex items-center justify-between">
+                      <span className="text-neutral-300 font-semibold text-base text-left">
+                        {item.label}
+                      </span>
+                      {item.items.some(suTuggom => {
+                        const count = getBadgeCount(suTuggom.label, suTuggom.path);
+                        if (count > 0) return true;
+                        if (suTuggom.type === "expandable" && suTuggom.suTuggoms) {
+                          return suTuggom.suTuggoms.some(si => getBadgeCount(si.label, si.path) > 0);
+                        }
+                        return false;
+                      }) && (
                           <span className="w-2 h-2 bg-orange-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(249,115,22,0.5)]" />
                         )}
-                      </div>
+                    </div>
                     <div className="space-y-1">
-                      {item.items.map((subItem, subIndex) => renderMenuItem(subItem, `${index}-${subIndex}`, true))}
+                      {item.items.map((suTuggom, subIndex) => renderMenuItem(suTuggom, `${index}-${subIndex}`, true))}
                     </div>
                   </div>
                 )

@@ -65,7 +65,7 @@ export default function LandingPageManagement() {
     under250PriceLimit: 250,
     festBannerImages: [],
     stats: { restaurants: '3,00,000+', cities: '800+', orders: '3 billion+' },
-    appLinks: { playStore: 'https://play.google.com/store/apps/details?id=com.indian.bite.user', appStore: '' },
+    appLinks: { playStore: 'https://play.google.com/store/apps/details?id=com.indian.Tuggo.user', appStore: '' },
     socialLinks: { instagram: '', twitter: '', facebook: '', linkedin: '', youtube: '' },
     footerLinks: {
       about: [
@@ -1086,7 +1086,7 @@ export default function LandingPageManagement() {
           under250PriceLimit: Number(nextSettings.under250PriceLimit) || 250,
           festBannerImages: Array.isArray(nextSettings.festBannerImages) ? nextSettings.festBannerImages : [],
           stats: nextSettings.stats || { restaurants: '3,00,000+', cities: '800+', orders: '3 billion+' },
-          appLinks: nextSettings.appLinks || { playStore: 'https://play.google.com/store/apps/details?id=com.indian.bite.user', appStore: '' },
+          appLinks: nextSettings.appLinks || { playStore: 'https://play.google.com/store/apps/details?id=com.indian.Tuggo.user', appStore: '' },
           socialLinks: nextSettings.socialLinks || { instagram: '', twitter: '', facebook: '', linkedin: '', youtube: '' },
           footerLinks: nextSettings.footerLinks || {
             about: [
@@ -2032,16 +2032,16 @@ export default function LandingPageManagement() {
                     { id: 'collection', label: 'Collections', link: '/user/profile/favorites' }
                   ].map((item) => {
                     // Find matching item from DB
-                    const dbItem = exploreMore.find(i => i.label?.toLowerCase() === item.label.toLowerCase())
+                    const dTuggom = exploreMore.find(i => i.label?.toLowerCase() === item.label.toLowerCase())
 
                     return (
                       <div key={item.id} className="border border-slate-200 rounded-lg p-4 flex flex-col items-center relative">
                         <span className="text-sm font-semibold text-slate-700 mb-3">{item.label}</span>
 
                         <div className="w-24 h-24 mb-4 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center overflow-hidden relative group">
-                          {dbItem?.imageUrl ? (
+                          {dTuggom?.imageUrl ? (
                             <img
-                              src={dbItem.imageUrl}
+                              src={dTuggom.imageUrl}
                               alt={item.label}
                               className="w-full h-full object-contain p-2"
                             />
@@ -2074,7 +2074,7 @@ export default function LandingPageManagement() {
                             className={`w-full flex items-center justify-center gap-2 px-4 py-2 text-xs font-medium rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 transition-colors cursor-pointer ${exploreIconsUploading[item.id] ? 'opacity-50 pointer-events-none' : ''}`}
                           >
                             <Upload className="w-3 h-3" />
-                            {dbItem ? 'Change Icon' : 'Upload Icon'}
+                            {dTuggom ? 'Change Icon' : 'Upload Icon'}
                           </label>
                         </div>
                       </div>

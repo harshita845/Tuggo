@@ -448,7 +448,7 @@ export default function MasterLandingPage() {
                 src="https://b.zmtcdn.com/data/webuikit/23e930757c3df49840c482a8638bf5c31556001144.png"
                 alt="Google Play"
                 className="h-12 object-contain cursor-pointer"
-                onClick={() => window.open(landingSettings?.appLinks?.playStore || 'https://play.google.com/store/apps/details?id=com.indian.bite.user', '_blank')}
+                onClick={() => window.open(landingSettings?.appLinks?.playStore || 'https://play.google.com/store/apps/details?id=com.indian.Tuggo.user', '_blank')}
               />
               <img
                 src="https://b.zmtcdn.com/data/webuikit/9f0c85a5e33adb783fa0aef667075f9e1556003622.png"
@@ -571,7 +571,7 @@ export default function MasterLandingPage() {
                 src="https://b.zmtcdn.com/data/webuikit/23e930757c3df49840c482a8638bf5c31556001144.png"
                 alt="Google Play"
                 className="h-10 opacity-70 hover:opacity-100 transition-opacity cursor-pointer"
-                onClick={() => window.open(landingSettings?.appLinks?.playStore || 'https://play.google.com/store/apps/details?id=com.indian.bite.user', '_blank')}
+                onClick={() => window.open(landingSettings?.appLinks?.playStore || 'https://play.google.com/store/apps/details?id=com.indian.Tuggo.user', '_blank')}
               />
               <img
                 src="https://b.zmtcdn.com/data/webuikit/9f0c85a5e33adb783fa0aef667075f9e1556003622.png"

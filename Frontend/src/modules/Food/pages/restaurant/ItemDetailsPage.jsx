@@ -24,9 +24,9 @@ import { toast } from "sonner"
 import { ImageSourcePicker } from "@food/components/ImageSourcePicker"
 import { isFlutterBridgeAvailable } from "@food/utils/imageUploadUtils"
 import { getFoodVariants } from "@food/utils/foodVariants"
-const debugLog = (...args) => {}
-const debugWarn = (...args) => {}
-const debugError = (...args) => {}
+const debugLog = (...args) => { }
+const debugWarn = (...args) => { }
+const debugError = (...args) => { }
 
 const INVENTORY_RECOMMENDED_KEY = "restaurant_inventory_recommended_map"
 
@@ -207,12 +207,12 @@ export default function ItemDetailsPage() {
             // Check items in subsections
             if (section.subsections) {
               for (const subsection of section.subsections) {
-                const subItem = subsection.items?.find(i => {
+                const suTuggom = subsection.items?.find(i => {
                   const itemId = String(i.id || i._id || '').trim()
                   return itemId === searchId || itemId === id
                 })
-                if (subItem) {
-                  foundItem = subItem
+                if (suTuggom) {
+                  foundItem = suTuggom
                   break
                 }
               }
@@ -289,9 +289,9 @@ export default function ItemDetailsPage() {
           response?.data?.data ||
           null
         setRestaurantProfile(profile)
-        
+
         if (profile?.pureVegRestaurant === true) {
-           setFoodType("Veg")
+          setFoodType("Veg")
         }
       } catch (error) {
         debugWarn("Failed to load restaurant profile:", error)

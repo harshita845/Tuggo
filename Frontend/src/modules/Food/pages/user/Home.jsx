@@ -741,57 +741,7 @@ export default function Home() {
     return null;
   }, [defaultSavedAddress]);
 
-  const effectiveLocation = useMemo(() => {
-    let deliveryAddressMode = "saved";
-    try {
-      deliveryAddressMode =
-        localStorage.getItem("deliveryAddressMode") || "saved";
-    } catch {
-      deliveryAddressMode = "saved";
-    }
-
-    if (deliveryAddressMode === "current") {
-      return location;
-    }
-
-    if (
-      defaultSavedAddressLocation &&
-      Number.isFinite(defaultSavedAddressLocation.latitude) &&
-      Number.isFinite(defaultSavedAddressLocation.longitude)
-    ) {
-      const resolvedAddress = formatSavedAddress(defaultSavedAddress);
-      return {
-        ...(location || {}),
-        latitude: defaultSavedAddressLocation.latitude,
-        longitude: defaultSavedAddressLocation.longitude,
-        area:
-          defaultSavedAddress?.additionalDetails ||
-          defaultSavedAddress?.street ||
-          defaultSavedAddress?.area ||
-          location?.area ||
-          "",
-        city: defaultSavedAddress?.city || location?.city || "",
-        state: defaultSavedAddress?.state || location?.state || "",
-        address:
-          resolvedAddress ||
-          defaultSavedAddress?.address ||
-          location?.address ||
-          "",
-        formattedAddress:
-          resolvedAddress ||
-          defaultSavedAddress?.formattedAddress ||
-          location?.formattedAddress ||
-          "",
-      };
-    }
-
-    return location;
-  }, [
-    defaultSavedAddress,
-    defaultSavedAddressLocation,
-    formatSavedAddress,
-    location,
-  ]);
+  const effectiveLocation = location;
 
   // Fetch categories (zone-aware) for the homepage category rail.
   useEffect(() => {
@@ -1128,7 +1078,7 @@ export default function Home() {
         return;
       }
 
-      if (!effectiveZoneId) {
+      if (!effectiveZoneId && !effectiveLocation?.city) {
         setLoadingRestaurants(false);
         setRestaurantsData([]);
         return;
@@ -1138,7 +1088,7 @@ export default function Home() {
         homePageCache.lat === roundCoord(effectiveLocation?.latitude) &&
         homePageCache.lng === roundCoord(effectiveLocation?.longitude);
 
-      if (isDefaultFetch && homePageCache.restaurantsData && homePageCache.effectiveZoneId === effectiveZoneId && isLocationSame) {
+      if (isDefaultFetch && homePageCache.restaurantsData && homePageCache.restaurantsData.length > 0 && homePageCache.effectiveZoneId === effectiveZoneId && isLocationSame) {
         setLoadingRestaurants(false);
         return;
       }
@@ -1153,12 +1103,14 @@ export default function Home() {
         const params = {};
 
         // Always send user coordinates when available so backend can compute distance/sort.
+        const effectiveLat = effectiveLocation?.latitude !== undefined ? effectiveLocation.latitude : effectiveLocation?.lat;
+        const effectiveLng = effectiveLocation?.longitude !== undefined ? effectiveLocation.longitude : effectiveLocation?.lng;
         if (
-          Number.isFinite(effectiveLocation?.latitude) &&
-          Number.isFinite(effectiveLocation?.longitude)
+          Number.isFinite(effectiveLat) &&
+          Number.isFinite(effectiveLng)
         ) {
-          params.lat = effectiveLocation.latitude;
-          params.lng = effectiveLocation.longitude;
+          params.lat = effectiveLat;
+          params.lng = effectiveLng;
         }
 
         // Sort by
@@ -1220,10 +1172,16 @@ export default function Home() {
         const normalizedUserCity = String(effectiveLocation?.city || "")
           .trim()
           .toLowerCase();
-        // Removed city filtering to allow zoneId & polygon to accurately fetch all zone restaurants.
+        
+        if (effectiveLocation?.city) {
+          params.city = effectiveLocation.city;
+        }
+        if (effectiveLocation?.state) {
+          params.state = effectiveLocation.state;
+        }
 
         debugLog("Fetching restaurants with params:", params);
-        const response = await restaurantAPI.getRestaurants(params);
+        const response = await restaurantAPI.getRestaurants(params, { noCache: true });
         debugLog("Restaurants API response:", response.data);
 
         // If a newer request started, ignore this response to avoid races/flicker.
@@ -1260,8 +1218,8 @@ export default function Home() {
           };
 
           // Get user coordinates
-          const userLat = effectiveLocation?.latitude;
-          const userLng = effectiveLocation?.longitude;
+          const userLat = effectiveLocation?.latitude ?? effectiveLocation?.lat;
+          const userLng = effectiveLocation?.longitude ?? effectiveLocation?.lng;
 
           // Transform API data to match expected format
           const normalizeCityValue = (value) =>
@@ -1519,6 +1477,10 @@ export default function Home() {
       buildRestaurantImageCandidates,
       effectiveLocation?.latitude,
       effectiveLocation?.longitude,
+      effectiveLocation?.lat,
+      effectiveLocation?.lng,
+      effectiveLocation?.city,
+      effectiveLocation?.state,
       effectiveZoneId,
       effectiveZoneLoading,
     ],

@@ -141,7 +141,7 @@ const RESTAURANTS_DATA = [
     },
     {
         city: 'Indore',
-        name: 'Sarafa Street Bites',
+        name: 'Sarafa Street Tuggos',
         cuisines: ['Street Food', 'Desserts', 'Snacks'],
         rating: 4.6,
         coverImages: ['https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80'],
@@ -260,9 +260,9 @@ async function run() {
         await Restaurant.deleteMany({ ownerName: 'Tuggo Demo' });
         await DeliveryPartner.deleteMany({ name: { $regex: 'Tuggo Rider' } });
         await HeroBanner.deleteMany({ publicId: { $regex: 'demo_banner_' } });
-        
+
         await FoodItem.deleteMany({ name: { $regex: 'Tuggo' } }); // Clear previous demo items if any
-        
+
         // Clear and seed categories
         await FoodCategory.deleteMany({});
         const categoryMap = {};
@@ -300,7 +300,7 @@ async function run() {
         let phoneCounter = 9000000000;
         for (const restData of RESTAURANTS_DATA) {
             const z = ZONES_DATA.find(z => z.name === restData.city);
-            
+
             const restaurant = await Restaurant.create({
                 restaurantName: restData.name,
                 ownerName: 'Tuggo Demo',

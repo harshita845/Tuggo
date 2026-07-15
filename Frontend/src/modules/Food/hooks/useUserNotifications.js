@@ -71,7 +71,7 @@ export const useUserNotifications = () => {
 
       const isImportant =
         String(data.orderStatus).includes('cancel') ||
-        ['ready_for_pickup', 'ready', 'confirmed'].includes(data.orderStatus);
+        ['confirmed', 'preparing', 'ready_for_pickup', 'ready', 'reached_pickup', 'picked_up', 'reached_drop', 'delivered', 'dead'].includes(data.orderStatus);
       const isOrderTrackingScreen =
         typeof window !== 'undefined' &&
         String(window.location?.pathname || '').includes('/user/orders/');

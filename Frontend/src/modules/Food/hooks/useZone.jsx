@@ -117,23 +117,17 @@ export function useZone(location) {
         err.response?.data?.message || err.message || "Failed to detect zone",
       );
 
-      // Try to use cached zone if available
-      const cachedZoneId = localStorage.getItem("userZoneId");
-      if (cachedZoneId) {
-        const cachedZone = localStorage.getItem("userZone");
-        setZoneId(cachedZoneId);
-        try {
-          setZone(cachedZone && cachedZone !== "undefined" ? JSON.parse(cachedZone) : null);
-        } catch {
-          setZone(null);
-        }
-        setZoneStatus("IN_SERVICE");
-      } else {
-        // Network/CORS/backend failures should not be treated as confirmed out-of-zone.
-        setZoneStatus("loading");
-        setZoneId(null);
-        setZone(null);
-      }
+      // On error, we should NOT silently fall back to a previously cached zone (e.g. Indore) 
+      // because the user might have selected a new location (e.g. Punjab) and fetching 
+      // restaurants for the old zone would be incorrect.
+      setZoneStatus("OUT_OF_SERVICE");
+      setZoneId(null);
+      setZone(null);
+      
+      // We also should clear the cache so it doesn't persist bad state
+      localStorage.removeItem("userZoneId");
+      localStorage.removeItem("userZone");
+      localStorage.setItem("outOfService", "true");
     } finally {
       setLoading(false);
     }
@@ -141,8 +135,10 @@ export function useZone(location) {
 
   // Auto-detect zone when location changes
   useEffect(() => {
-    const lat = roundCoord(location?.latitude, 6)
-    const lng = roundCoord(location?.longitude, 6)
+    const rawLat = location?.latitude !== undefined ? location.latitude : location?.lat;
+    const rawLng = location?.longitude !== undefined ? location.longitude : location?.lng;
+    const lat = roundCoord(rawLat, 6)
+    const lng = roundCoord(rawLng, 6)
 
     // Check if coordinates have changed significantly (threshold: ~10 meters)
     const coordThreshold = 0.0001; // approximately 10 meters

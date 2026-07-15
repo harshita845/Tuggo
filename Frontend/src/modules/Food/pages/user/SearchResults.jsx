@@ -11,9 +11,9 @@ import { useAppLocation } from "@food/hooks/useAppLocation"
 import { restaurantAPI, adminAPI } from "@food/api"
 import { useDelayedLoading } from "@food/hooks/useDelayedLoading"
 
-const debugLog = (...args) => {}
-const debugWarn = (...args) => {}
-const debugError = (...args) => {}
+const debugLog = (...args) => { }
+const debugWarn = (...args) => { }
+const debugError = (...args) => { }
 
 // Filter options
 const filterOptions = [
@@ -277,7 +277,7 @@ export default function SearchResults() {
             .map((restaurant) => {
               // Use backend data directly - filter out default values
               let deliveryTime = restaurant.estimatedDeliveryTime || null
-              
+
               let distance = null;
               if (restaurant.distanceText) {
                 distance = restaurant.distanceText;
@@ -286,10 +286,10 @@ export default function SearchResults() {
                 const userLat = location?.latitude;
                 const userLng = location?.longitude;
                 const restaurantLocation = restaurant.location || (restaurant.profile ? restaurant.profile.location : null);
-                
-                const restaurantLat = restaurantLocation?.latitude || 
+
+                const restaurantLat = restaurantLocation?.latitude ||
                   (restaurantLocation?.coordinates && Array.isArray(restaurantLocation.coordinates) ? restaurantLocation.coordinates[1] : null);
-                const restaurantLng = restaurantLocation?.longitude || 
+                const restaurantLng = restaurantLocation?.longitude ||
                   (restaurantLocation?.coordinates && Array.isArray(restaurantLocation.coordinates) ? restaurantLocation.coordinates[0] : null);
 
                 if (
@@ -493,8 +493,8 @@ export default function SearchResults() {
 
                     const subsections = Array.isArray(section?.subsections) ? section.subsections : []
                     for (const subsection of subsections) {
-                      const subItems = Array.isArray(subsection?.items) ? subsection.items : []
-                      const subImageItem = subItems.find((item) => item?.image)
+                      const suTuggoms = Array.isArray(subsection?.items) ? subsection.items : []
+                      const subImageItem = suTuggoms.find((item) => item?.image)
                       if (subImageItem?.image) return subImageItem.image
                     }
 

@@ -152,9 +152,10 @@ export default function ProfessionalSearch() {
 
   useEffect(() => {
     performSearch(debouncedQuery, selectedCategoryId)
-    if (debouncedQuery) {
-        setSearchParams({ q: debouncedQuery, ...(selectedCategoryId ? { cat: selectedCategoryId } : {}) }, { replace: true })
-    }
+    const params = {}
+    if (debouncedQuery) params.q = debouncedQuery
+    if (selectedCategoryId) params.cat = selectedCategoryId
+    setSearchParams(params, { replace: true })
   }, [debouncedQuery, selectedCategoryId, performSearch, setSearchParams])
 
   // Auto-scroll to selected category on load or when category changes
@@ -234,7 +235,12 @@ export default function ProfessionalSearch() {
               autoFocus
               placeholder="Search dishes or restaurants" 
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
+              onChange={(e) => {
+                setQuery(e.target.value)
+                if (e.target.value && selectedCategoryId) {
+                  setSelectedCategoryId(null)
+                }
+              }}
               className="pl-10 pr-12 h-10 sm:h-12 bg-gray-50 dark:bg-zinc-800/50 border-gray-100 dark:border-zinc-700 focus:border-primary dark:focus:border-primary focus:ring-4 focus:ring-primary/5 rounded-2xl text-sm sm:text-base transition-all"
             />
             
@@ -268,7 +274,10 @@ export default function ProfessionalSearch() {
                 {history.map((term, i) => (
                   <button 
                     key={i} 
-                    onClick={() => setQuery(term)}
+                    onClick={() => {
+                      setQuery(term)
+                      setSelectedCategoryId(null)
+                    }}
                     className="flex items-center gap-1.5 px-3 py-1.5 bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-xl text-[12px] font-bold text-gray-600 dark:text-zinc-400 hover:bg-gray-50 hover:border-primary/30 transition-all shadow-sm"
                   >
                     <History className="w-3.5 h-3.5 text-gray-400" />

@@ -16,6 +16,7 @@ import {
   Bell
 } from "lucide-react"
 import { deliveryAPI, notificationAPI } from "@food/api"
+import { API_BASE_URL } from "@food/api/config"
 import { toast } from "sonner"
 import { clearModuleAuth } from "@food/utils/auth"
 import { registerWebPushForCurrentModule } from "@food/utils/firebaseMessaging"
@@ -37,6 +38,22 @@ export const ProfileV2 = () => {
   const [deleteCaptcha, setDeleteCaptcha] = useState("")
   const [isDeleting, setIsDeleting] = useState(false)
   const [isTestingNotification, setIsTestingNotification] = useState(false)
+
+  const normalizeImageUrl = (imageUrl) => {
+    if (typeof imageUrl !== 'string' || !imageUrl) return '';
+    if (imageUrl.startsWith('http')) return imageUrl;
+    
+    let backendOrigin = '';
+    if (API_BASE_URL && API_BASE_URL.startsWith('http')) {
+       backendOrigin = API_BASE_URL.replace(/\/api(\/v\d+)?\/?$/i, '').replace(/\/+$/, '');
+    } else if (typeof window !== 'undefined' && window.location.hostname.includes('tuggo.in')) {
+       backendOrigin = 'https://api.tuggo.in';
+    } else {
+       backendOrigin = 'http://localhost:5000';
+    }
+    
+    return `${backendOrigin}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+  };
 
   useEffect(() => {
     // Register for push notifications on mount for this module
@@ -188,7 +205,7 @@ export const ProfileV2 = () => {
           </div>
           <div className="relative shrink-0 ml-4">
             {profile?.profileImage?.url ? (
-              <img src={profile.profileImage.url} alt="Profile" className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-2 border-gray-200" />
+              <img src={normalizeImageUrl(profile.profileImage.url)} alt="Profile" className="w-20 h-20 md:w-24 md:h-24 rounded-full object-cover border-2 border-gray-200" />
             ) : (
               <div className="w-20 h-20 md:w-24 md:h-24 rounded-full bg-gray-100 flex items-center justify-center border-2 border-gray-200">
                 <User className="w-10 h-10 md:w-12 md:h-12 text-gray-400" />

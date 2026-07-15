@@ -50,7 +50,11 @@ if (typeof window !== 'undefined') {
 const resolveAudioSource = (source) => {
   if (!source) return '';
   // Handle ES6 module imports where the URL might be in a 'default' property
-  const url = typeof source === 'object' ? (source.default || source) : source;
+  let url = typeof source === 'object' ? (source.default || source) : source;
+  if (typeof import.meta !== "undefined" && import.meta.env?.DEV) {
+    const separator = url.includes("?") ? "&" : "?";
+    url = `${url}${separator}cb=${Date.now()}`;
+  }
   return url;
 };
 

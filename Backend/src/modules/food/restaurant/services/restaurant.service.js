@@ -1269,16 +1269,28 @@ export const uploadRestaurantMenuImages = async (restaurantId, files = []) => {
 };
 
 export const listApprovedRestaurants = async (query = {}) => {
+    console.log("[DEBUG] listApprovedRestaurants received query:", query);
     const limit = parseQueryLimit(query.limit, 100, 1000);
     const page = parseQueryPage(query.page, 1);
     const skip = (page - 1) * limit;
 
     const filter = { status: 'approved' };
 
+    const locOr = [];
     if (query.city && String(query.city).trim()) {
         const city = String(query.city).trim().slice(0, 80);
         const rx = { $regex: escapeRegex(city), $options: 'i' };
-        filter.$and = [...(filter.$and || []), { $or: [{ 'location.city': rx }, { city: rx }] }];
+        locOr.push({ 'location.city': rx }, { city: rx });
+    }
+    if (query.state && String(query.state).trim()) {
+        const state = String(query.state).trim().slice(0, 80);
+        const rx = { $regex: escapeRegex(state), $options: 'i' };
+        locOr.push({ 'location.state': rx }, { state: rx });
+        // Also match state against city field (for messy data where state was entered as city)
+        locOr.push({ 'location.city': rx }, { city: rx });
+    }
+    if (locOr.length > 0) {
+        filter.$and = [...(filter.$and || []), { $or: locOr }];
     }
     if (query.area && String(query.area).trim()) {
         const area = String(query.area).trim().slice(0, 80);
@@ -1361,13 +1373,15 @@ export const listApprovedRestaurants = async (query = {}) => {
     const radiusKm = toFiniteNumber(query.radiusKm) ?? toFiniteNumber(query.maxDistance);
     const sortBy = parseSortBy(query.sortBy);
     
-    // Only use $geoNear if geo filtering is explicitly needed (radiusKm), OR if there is no zone filter.
-    // If a zone filter is present, we skip $geoNear to avoid dropping restaurants that lack valid GeoJSON coordinates.
-    const wantsGeo = (radiusKm !== null) || (!zoneFilterMatch && (sortBy === 'nearest' || (lat !== null && lng !== null)));
+    const hasCityOrState = (query.city && String(query.city).trim()) || (query.state && String(query.state).trim());
+    
+    // Only use $geoNear if geo filtering is explicitly needed (radiusKm), OR if there is no zone filter AND no city/state filter.
+    // If a zone filter or city/state filter is present, we skip $geoNear to avoid dropping restaurants that lack valid GeoJSON coordinates.
+    const wantsGeo = (radiusKm !== null) || (!zoneFilterMatch && !hasCityOrState && (sortBy === 'nearest' || (lat !== null && lng !== null)));
 
-    // Safety check: Prevent returning all restaurants globally if no zone and no geo constraints are provided
-    if (!zoneFilterMatch && (!wantsGeo || lat === null || lng === null)) {
-        console.log(`[DEBUG] listApprovedRestaurants: No zone filter and no geo params. Returning empty array to prevent global dump.`);
+    // Safety check: Prevent returning all restaurants globally if no zone, no geo constraints, and no city/state are provided
+    if (!zoneFilterMatch && !hasCityOrState && (!wantsGeo || lat === null || lng === null)) {
+        console.log(`[DEBUG] listApprovedRestaurants: No zone filter, no city/state, and no geo params. Returning empty array to prevent global dump.`);
         return { restaurants: [], total: 0, page, limit };
     }
 

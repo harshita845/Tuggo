@@ -61,9 +61,9 @@ import fssaiLogo from "@food/assets/fssai.png"
 import { RestaurantDetailSkeleton } from "@food/components/ui/loading-skeletons"
 import MenuScanAnimation from "@food/components/user/MenuScanAnimation"
 
-const debugLog = (...args) => {}
-const debugWarn = (...args) => {}
-const debugError = (...args) => {}
+const debugLog = (...args) => { }
+const debugWarn = (...args) => { }
+const debugError = (...args) => { }
 
 
 
@@ -90,7 +90,7 @@ const DishImage = ({ src, alt, className = "" }) => {
           <Utensils className="h-6 w-6 text-gray-400 dark:text-gray-500 opacity-50" />
         </div>
       )}
-      
+
       {/* Actual Image */}
       <img
         src={src}
@@ -179,7 +179,7 @@ function RestaurantDetailsContent() {
   const fetchedRestaurantRef = useRef(false) // Track if restaurant has been fetched for current slug
   const fetchedSlugRef = useRef(null)
   const fetchedZoneIdRef = useRef(null)
-  
+
   // Public offers state for dynamic pricing
   const [publicOffers, setPublicOffers] = useState([])
   const publicOffersFetchedRef = useRef(false)
@@ -271,40 +271,40 @@ function RestaurantDetailsContent() {
               // Fallback without zoneId so missing live location never blocks this page.
               debugLog('? Direct lookup failed, trying search by name...')
 
-                const searchVariants = zoneId
-                  ? [{ limit: 100, zoneId: zoneId, _ts: Date.now() }, { limit: 100, _ts: Date.now() }]
-                  : [{ limit: 100, _ts: Date.now() }]
+              const searchVariants = zoneId
+                ? [{ limit: 100, zoneId: zoneId, _ts: Date.now() }, { limit: 100, _ts: Date.now() }]
+                : [{ limit: 100, _ts: Date.now() }]
 
-                for (const searchParams of searchVariants) {
-                  try {
-                    const searchResponse = await restaurantAPI.getRestaurants(searchParams, { noCache: true })
-                    const restaurants = searchResponse?.data?.data?.restaurants || searchResponse?.data?.data || []
+              for (const searchParams of searchVariants) {
+                try {
+                  const searchResponse = await restaurantAPI.getRestaurants(searchParams, { noCache: true })
+                  const restaurants = searchResponse?.data?.data?.restaurants || searchResponse?.data?.data || []
 
-                    // Try to find by slug match or name match
-                    const restaurantName = slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
-                    const matchingRestaurant = restaurants.find(r =>
-                      r.slug === slug ||
-                      r.name?.toLowerCase().replace(/\s+/g, '-') === slug.toLowerCase() ||
-                      r.name?.toLowerCase() === restaurantName.toLowerCase()
-                    )
+                  // Try to find by slug match or name match
+                  const restaurantName = slug.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+                  const matchingRestaurant = restaurants.find(r =>
+                    r.slug === slug ||
+                    r.name?.toLowerCase().replace(/\s+/g, '-') === slug.toLowerCase() ||
+                    r.name?.toLowerCase() === restaurantName.toLowerCase()
+                  )
 
-                    if (matchingRestaurant) {
-                      // Get full restaurant details by ID
-                      const requestConfigFallback = { noCache: true }
-                      if (Number.isFinite(userLocation?.latitude) && Number.isFinite(userLocation?.longitude)) {
-                        requestConfigFallback.params = { lat: userLocation.latitude, lng: userLocation.longitude }
-                      }
-                      const fullResponse = await restaurantAPI.getRestaurantById(matchingRestaurant._id || matchingRestaurant.restaurantId, requestConfigFallback)
-                      if (fullResponse.data && fullResponse.data.success && fullResponse.data.data) {
-                        apiRestaurant = fullResponse.data.data
-                        debugLog('? Found restaurant in restaurant API by name search:', apiRestaurant)
-                        break
-                      }
+                  if (matchingRestaurant) {
+                    // Get full restaurant details by ID
+                    const requestConfigFallback = { noCache: true }
+                    if (Number.isFinite(userLocation?.latitude) && Number.isFinite(userLocation?.longitude)) {
+                      requestConfigFallback.params = { lat: userLocation.latitude, lng: userLocation.longitude }
                     }
-                  } catch (searchError) {
-                    debugWarn('? Search fallback failed for params:', searchParams, searchError?.message)
+                    const fullResponse = await restaurantAPI.getRestaurantById(matchingRestaurant._id || matchingRestaurant.restaurantId, requestConfigFallback)
+                    if (fullResponse.data && fullResponse.data.success && fullResponse.data.data) {
+                      apiRestaurant = fullResponse.data.data
+                      debugLog('? Found restaurant in restaurant API by name search:', apiRestaurant)
+                      break
+                    }
                   }
+                } catch (searchError) {
+                  debugWarn('? Search fallback failed for params:', searchParams, searchError?.message)
                 }
+              }
             }
           } catch (restaurantError) {
             debugError('? Restaurant not found in restaurant API either:', restaurantError)
@@ -741,7 +741,7 @@ function RestaurantDetailsContent() {
 
                     return !!targetRestaurantName && candidateNames.includes(targetRestaurantName);
                   });
-                  
+
                   // Need to update state if component uses this variable to re-render recommendation section
                   // Since the state update might be missing here, the UI won't reflect it if fetched late,
                   // but we at least avoid blocking the main menu load!
@@ -802,33 +802,33 @@ function RestaurantDetailsContent() {
                 }
 
                 const normalizeItem = (item = {}) => {
-                   const isRecommended = item.isRecommended === true || item.isRecommended === 1 || String(item.isRecommended) === "true"
-                   const isSpicy = item.isSpicy === true || item.isSpicy === 1 || String(item.isSpicy) === "true"
-                   let foodType = item.foodType || "Non-Veg"
-                   if (typeof foodType === 'string') {
-                     if (foodType.toLowerCase() === 'veg') foodType = 'Veg'
-                     else if (foodType.toLowerCase() === 'non-veg' || foodType.toLowerCase() === 'nonveg') foodType = 'Non-Veg'
-                   }
-                   
-                   // Derive isVeg strictly from foodType
-                   const isVeg = foodType === 'Veg'
+                  const isRecommended = item.isRecommended === true || item.isRecommended === 1 || String(item.isRecommended) === "true"
+                  const isSpicy = item.isSpicy === true || item.isSpicy === 1 || String(item.isSpicy) === "true"
+                  let foodType = item.foodType || "Non-Veg"
+                  if (typeof foodType === 'string') {
+                    if (foodType.toLowerCase() === 'veg') foodType = 'Veg'
+                    else if (foodType.toLowerCase() === 'non-veg' || foodType.toLowerCase() === 'nonveg') foodType = 'Non-Veg'
+                  }
 
-                   return {
-                     ...item,
-                      id: String(item.id || item._id || `${Date.now()}-${Math.random()}`),
-                      name: item.name || "Unnamed Item",
-                      foodType,
-                      isVeg, // Explicitly set isVeg
-                      price: getFoodDisplayPrice(item),
-                       image: resolveItemImage(item) || normalizeImageUrl(item.image || "", BACKEND_ORIGIN),
-                      variants: getFoodVariants(item),
-                      variations: getFoodVariants(item),
-                      isAvailable: item.isAvailable !== false,
-                      isRecommended,
-                      isSpicy,
-                     description: typeof item.description === "string" ? item.description : "",
-                   }
-                 }
+                  // Derive isVeg strictly from foodType
+                  const isVeg = foodType === 'Veg'
+
+                  return {
+                    ...item,
+                    id: String(item.id || item._id || `${Date.now()}-${Math.random()}`),
+                    name: item.name || "Unnamed Item",
+                    foodType,
+                    isVeg, // Explicitly set isVeg
+                    price: getFoodDisplayPrice(item),
+                    image: resolveItemImage(item) || normalizeImageUrl(item.image || "", BACKEND_ORIGIN),
+                    variants: getFoodVariants(item),
+                    variations: getFoodVariants(item),
+                    isAvailable: item.isAvailable !== false,
+                    isRecommended,
+                    isSpicy,
+                    description: typeof item.description === "string" ? item.description : "",
+                  }
+                }
                 const menuSections = toArray(rawSections).map((section, sectionIndex) => ({
                   ...section,
                   id: String(section.id || section._id || `section-${sectionIndex}`),
@@ -911,11 +911,11 @@ function RestaurantDetailsContent() {
                   })
                   const matchedItem = allItemsInMenu.find(item => String(item.id || item._id || "").trim() === targetDishId)
                   if (matchedItem) {
-                    searchedDishSection = { 
-                      name: "Result for your search", 
-                      items: [matchedItem], 
+                    searchedDishSection = {
+                      name: "Result for your search",
+                      items: [matchedItem],
                       subsections: [],
-                      isSearchResult: true 
+                      isSearchResult: true
                     }
                   }
                 }
@@ -1765,7 +1765,7 @@ function RestaurantDetailsContent() {
   // Helper function to calculate final price after discount
   const getFinalPrice = (item) => {
     let priceNum = item.price || 0;
-    
+
     // Attempt to parse price if it's a string like "Starting from ₹199"
     if (typeof priceNum === 'string') {
       const parsed = parseFloat(priceNum.replace(/[^0-9.]/g, ''));
@@ -1777,7 +1777,7 @@ function RestaurantDetailsContent() {
     if (discountAmount > 0) {
       return Math.max(0, priceNum - discountAmount);
     }
-    
+
     return Math.max(0, priceNum);
   };
 
@@ -1977,9 +1977,9 @@ function RestaurantDetailsContent() {
       const directItems = Array.isArray(section?.items) ? section.items.length : 0
       const subsectionItems = Array.isArray(section?.subsections)
         ? section.subsections.reduce(
-            (sum, subsection) => sum + (Array.isArray(subsection?.items) ? subsection.items.length : 0),
-            0
-          )
+          (sum, subsection) => sum + (Array.isArray(subsection?.items) ? subsection.items.length : 0),
+          0
+        )
         : 0
       return count + directItems + subsectionItems
     }, 0)
@@ -1994,15 +1994,15 @@ function RestaurantDetailsContent() {
     let currentCount = 0
     return filteredSections.map(({ section, originalIndex }) => {
       if (currentCount >= visibleItemCount) return { section: { ...section, items: [], subsections: [] }, originalIndex }
-      
+
       const newSection = { ...section, items: [], subsections: [] }
-      
+
       if (section.subsections && section.subsections.length > 0) {
         for (const sub of section.subsections) {
           if (currentCount >= visibleItemCount) break
-          const subItems = sub.items || []
+          const suTuggoms = sub.items || []
           const remaining = visibleItemCount - currentCount
-          const itemsToTake = subItems.slice(0, remaining)
+          const itemsToTake = suTuggoms.slice(0, remaining)
           currentCount += itemsToTake.length
           newSection.subsections.push({ ...sub, items: itemsToTake })
         }
@@ -2042,7 +2042,7 @@ function RestaurantDetailsContent() {
     }
 
     window.addEventListener("scroll", handleScroll, { passive: true })
-    
+
     // Check initially in case screen is very large and 20 items don't trigger scroll
     handleScroll()
 
@@ -2205,17 +2205,17 @@ function RestaurantDetailsContent() {
               const isStartingFrom = priceStr.includes('Starting from');
               const priceNum = parseFloat(priceStr.replace(/[^0-9.]/g, ''));
               if (isNaN(priceNum)) return <p className="font-semibold text-gray-900 dark:text-white">{priceStr}</p>;
-              
+
               const { discountValue, isFlatDiscount, discountAmount } = calculateBestDiscount(item, priceNum);
-              
+
               if (discountAmount > 0) {
-                
+
                 const discountedPrice = Math.max(0, Math.round(priceNum - discountAmount));
-                
+
                 // Calculate effective percentage for badge
                 const effectivePercentage = Math.round(((priceNum - discountedPrice) / priceNum) * 100);
                 const discountLabel = isFlatDiscount ? `₹${discountValue} OFF` : `${effectivePercentage}% OFF`;
-                
+
                 return (
                   <div className="flex flex-col gap-0.5 mt-0.5">
                     <div className="flex items-center gap-2">
@@ -2234,7 +2234,7 @@ function RestaurantDetailsContent() {
                   </div>
                 );
               }
-              
+
               if (isStartingFrom) {
                 return (
                   <div className="flex flex-col leading-tight">
@@ -2243,7 +2243,7 @@ function RestaurantDetailsContent() {
                   </div>
                 );
               }
-              
+
               return <p className="font-semibold text-gray-900 dark:text-white">{priceStr}</p>;
             })()}
             {/* Preparation Time - Show if available */}
@@ -2308,11 +2308,10 @@ function RestaurantDetailsContent() {
             <motion.div
               initial={{ opacity: 0, scale: 0.8 }}
               animate={{ opacity: 1, scale: 1 }}
-              className={`absolute -bottom-3 sm:-bottom-4 left-1/2 -translate-x-1/2 rounded-full h-8 sm:h-9 md:h-10 px-3 sm:px-4 flex items-center justify-between gap-3 min-w-[90px] md:min-w-[100px] z-10 transition-all duration-300 ${
-                shouldShowGrayscale 
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50 shadow-none border border-gray-300' 
+              className={`absolute -bottom-3 sm:-bottom-4 left-1/2 -translate-x-1/2 rounded-full h-8 sm:h-9 md:h-10 px-3 sm:px-4 flex items-center justify-between gap-3 min-w-[90px] md:min-w-[100px] z-10 transition-all duration-300 ${shouldShowGrayscale
+                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-50 shadow-none border border-gray-300'
                   : 'shadow-[0_4px_14px_0_rgba(0,183,97,0.39)] bg-[#00B761] hover:bg-[#00A055] text-white'
-              }`}
+                }`}
             >
               <button
                 onClick={(e) => {
@@ -2375,8 +2374,8 @@ function RestaurantDetailsContent() {
             }
           }}
           initial={{ scale: 0.98, opacity: 0.95 }}
-          animate={{ 
-            scale: [1, 1.02, 1.01], 
+          animate={{
+            scale: [1, 1.02, 1.01],
             opacity: 1,
             boxShadow: [
               "0 4px 12px rgba(126,56,102,0.1)",
@@ -2567,52 +2566,51 @@ function RestaurantDetailsContent() {
           <div className="relative">
             <div className="relative rounded-3xl border border-gray-100 dark:border-gray-800 bg-white dark:bg-[#1a1a1a] shadow-[0_16px_40px_rgba(15,23,42,0.08)] p-4 sm:p-5 space-y-4 overflow-hidden">
               <div className="absolute inset-x-0 top-0 h-1.5 bg-gradient-to-r from-primary via-[#8a4b77] to-[#b36b8f]" />
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-bold text-gray-900 dark:text-white truncate">
-                    {restaurant?.name || "Unknown Restaurant"}
-                  </h1>
-                  <Info className="h-5 w-5 text-gray-400" />
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white truncate">
+                      {restaurant?.name || "Unknown Restaurant"}
+                    </h1>
+                    <Info className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <div className="mt-1 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                    <Utensils className="h-4 w-4" />
+                    <span>{restaurant?.topCategory || restaurant?.cuisine || "Multi-cuisine"}</span>
+                  </div>
                 </div>
-                <div className="mt-1 flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-                  <Utensils className="h-4 w-4" />
-                  <span>{restaurant?.topCategory || restaurant?.cuisine || "Multi-cuisine"}</span>
+                <div className="flex flex-col items-end">
+                  <div className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white shadow-sm">
+                    <Star className="h-3 w-3 fill-white" />
+                    {ratingLabel}
+                  </div>
+                  <span className="mt-1 text-xs text-gray-500">
+                    {reviewsLabel}
+                  </span>
                 </div>
               </div>
-              <div className="flex flex-col items-end">
-                <div className="inline-flex items-center gap-1 rounded-full bg-emerald-600 px-2.5 py-1 text-xs font-semibold text-white shadow-sm">
-                  <Star className="h-3 w-3 fill-white" />
-                  {ratingLabel}
+
+              <div className="flex items-center justify-between gap-3">
+                <div
+                  className="flex items-center gap-1 text-sm text-gray-700 dark:text-gray-300 min-w-0"
+                >
+                  <MapPin className="h-4 w-4" />
+                  <span className="truncate">
+                    {restaurant?.distance || "1.2 km"} | {restaurant?.location || "Location"}
+                  </span>
                 </div>
-                <span className="mt-1 text-xs text-gray-500">
-                  {reviewsLabel}
+                <span
+                  className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold text-white ${isRestaurantOffline ? "bg-rose-600" : "bg-emerald-600"
+                    }`}
+                >
+                  {isRestaurantOffline ? "Offline" : "Open now"}
                 </span>
               </div>
-            </div>
 
-            <div className="flex items-center justify-between gap-3">
-              <div
-                className="flex items-center gap-1 text-sm text-gray-700 dark:text-gray-300 min-w-0"
-              >
-                <MapPin className="h-4 w-4" />
-                <span className="truncate">
-                  {restaurant?.distance || "1.2 km"} | {restaurant?.location || "Location"}
-                </span>
+              <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
+                <Clock className="h-4 w-4" />
+                <span>{restaurant?.deliveryTime || "25-30 mins"}</span>
               </div>
-              <span
-                className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-semibold text-white ${
-                  isRestaurantOffline ? "bg-rose-600" : "bg-emerald-600"
-                }`}
-              >
-                {isRestaurantOffline ? "Offline" : "Open now"}
-              </span>
-            </div>
-
-            <div className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300">
-              <Clock className="h-4 w-4" />
-              <span>{restaurant?.deliveryTime || "25-30 mins"}</span>
-            </div>
             </div>
           </div>
 
@@ -2629,7 +2627,7 @@ function RestaurantDetailsContent() {
               <div className="w-full rounded-2xl border border-green-200 dark:border-green-900/30 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 px-4 py-3 flex items-center justify-between shadow-[0_4px_12px_rgba(16,185,129,0.05)]">
                 <div className="flex items-center gap-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 shadow-sm">
-                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.864 2.227l8.909 8.91a2.182 2.182 0 010 3.085l-7.364 7.364a2.182 2.182 0 01-3.085 0l-8.91-8.91A2.182 2.182 0 012 11.137V4.41A2.182 2.182 0 014.182 2.23h6.727a2.182 2.182 0 011.955-.003z"/></svg>
+                    <svg className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.864 2.227l8.909 8.91a2.182 2.182 0 010 3.085l-7.364 7.364a2.182 2.182 0 01-3.085 0l-8.91-8.91A2.182 2.182 0 012 11.137V4.41A2.182 2.182 0 014.182 2.23h6.727a2.182 2.182 0 011.955-.003z" /></svg>
                   </div>
                   <div>
                     <p className="text-sm font-black text-green-800 dark:text-green-400 uppercase tracking-wide">
@@ -2684,9 +2682,8 @@ function RestaurantDetailsContent() {
                 {Array.from({ length: offerIndicatorCount }).map((_, index) => (
                   <span
                     key={`offer-dot-${index}`}
-                    className={`h-1.5 w-1.5 rounded-full ${
-                      index === activeOfferIndicator ? "bg-orange-500" : "bg-gray-200 dark:bg-gray-700"
-                    }`}
+                    className={`h-1.5 w-1.5 rounded-full ${index === activeOfferIndicator ? "bg-orange-500" : "bg-gray-200 dark:bg-gray-700"
+                      }`}
                   />
                 ))}
               </div>
@@ -2764,11 +2761,10 @@ function RestaurantDetailsContent() {
                     <button
                       type="button"
                       onClick={() => setSelectedMenuCategory("all")}
-                      className={`flex items-center gap-2 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors ${
-                        selectedMenuCategory === "all"
+                      className={`flex items-center gap-2 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors ${selectedMenuCategory === "all"
                           ? "border-primary bg-[#7e386615] text-primary"
                           : "border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300"
-                      }`}
+                        }`}
                     >
                       All
                     </button>
@@ -2777,11 +2773,10 @@ function RestaurantDetailsContent() {
                         key={category.id}
                         type="button"
                         onClick={() => setSelectedMenuCategory(category.id)}
-                        className={`flex items-center gap-2 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors ${
-                          selectedMenuCategory === category.id
+                        className={`flex items-center gap-2 whitespace-nowrap rounded-full border px-3 py-1.5 text-sm font-semibold transition-colors ${selectedMenuCategory === category.id
                             ? "border-primary bg-[#7e386615] text-primary"
                             : "border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] text-gray-700 dark:text-gray-300"
-                        }`}
+                          }`}
                       >
                         {category.image ? (
                           <img
@@ -3033,13 +3028,13 @@ function RestaurantDetailsContent() {
             drag
             dragMomentum={false}
             dragConstraints={
-              typeof window !== "undefined" 
-                ? { 
-                    top: -(window.innerHeight - 150),
-                    left: -(window.innerWidth - 150),
-                    right: 20,
-                    bottom: 50,
-                  }
+              typeof window !== "undefined"
+                ? {
+                  top: -(window.innerHeight - 150),
+                  left: -(window.innerWidth - 150),
+                  right: 20,
+                  bottom: 50,
+                }
                 : undefined
             }
             whileDrag={{ scale: 1.1, zIndex: 100 }}
@@ -3047,12 +3042,12 @@ function RestaurantDetailsContent() {
             className="fixed bottom-24 right-6 z-[60] pointer-events-auto sm:bottom-8 cursor-grab active:cursor-grabbing"
           >
             <Button
-              className="bg-primary hover:bg-secondary text-white flex items-center gap-2 shadow-[0_12px_40px_rgba(126,56,102,0.4)] border border-white/20 px-6 py-3.5 h-auto rounded-full font-bold transform transition-all duration-300 active:scale-95 group"
+              className="bg-orange-500 hover:bg-orange-600 text-white flex items-center gap-2 shadow-[0_12px_40px_rgba(255,102,0,0.4)] border border-white/20 px-6 py-3.5 h-auto rounded-full font-bold transform transition-all duration-300 active:scale-95 group"
               size="lg"
               onClick={() => setShowMenuSheet(true)}
             >
               <Utensils className="h-4 w-4 text-white group-hover:rotate-12 transition-transform" />
-              <span className="tracking-widest text-xs uppercase">Menu</span>
+              <span className="tracking-widest text-xs uppercase">Tuggo</span>
             </Button>
           </motion.div>,
           document.body
@@ -3100,7 +3095,7 @@ function RestaurantDetailsContent() {
                             })
                             // Bypass virtual scrolling to ensure the target section is rendered in the DOM
                             setVisibleItemCount(totalFilteredItems)
-                            
+
                             // Scroll to category section
                             setTimeout(() => {
                               const sectionId = `menu-section-${category.sectionIndex}`
@@ -3657,11 +3652,10 @@ function RestaurantDetailsContent() {
                               key={variant.id}
                               type="button"
                               onClick={() => setSelectedVariantId(variant.id)}
-                              className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${
-                                String(selectedVariantId || "") === String(variant.id)
+                              className={`rounded-full border px-3 py-1.5 text-sm font-medium transition-colors ${String(selectedVariantId || "") === String(variant.id)
                                   ? "border-red-500 bg-red-50 text-red-600 dark:border-red-400 dark:bg-red-900/30 dark:text-red-200"
                                   : "border-gray-200 bg-white text-gray-700 dark:border-gray-700 dark:bg-[#2a2a2a] dark:text-gray-300"
-                              }`}
+                                }`}
                             >
                               {variant.name} · {RUPEE_SYMBOL}{Math.round(variant.price)}
                             </button>
@@ -3749,7 +3743,7 @@ function RestaurantDetailsContent() {
                           {(() => {
                             const variant = getVariantForDish(selectedItem, selectedVariantId);
                             const basePrice = hasFoodVariants(selectedItem) ? (variant?.price || selectedItem.price) : selectedItem.price;
-                            
+
                             if (restaurant?.discount > 0) {
                               const discountedPrice = basePrice * (1 - restaurant.discount / 100);
                               return (

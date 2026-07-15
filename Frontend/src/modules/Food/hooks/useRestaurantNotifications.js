@@ -12,7 +12,13 @@ const debugWarn = (...args) => {}
 const debugError = (...args) => {}
 
 const resolveAudioSource = (source) => {
-  return source;
+  if (!source) return '';
+  let url = typeof source === 'object' ? (source.default || source) : source;
+  if (typeof import.meta !== "undefined" && import.meta.env?.DEV) {
+    const separator = url.includes("?") ? "&" : "?";
+    url = `${url}${separator}cb=${Date.now()}`;
+  }
+  return url;
 }
 
 const supportsBrowserNotifications = () =>

@@ -675,9 +675,9 @@ export default function Under250() {
           params.lng = location.longitude
         }
         const response = await restaurantAPI.getRestaurants(params)
-        const restaurantsRaw = Array.isArray(response?.data?.data?.restaurants)
+        const restaurantsRaw = (Array.isArray(response?.data?.data?.restaurants)
           ? response.data.data.restaurants
-          : []
+          : []).filter(r => getRestaurantAvailabilityStatus(r).isOpen)
         
         if (!cancelled) {
           setAllRawRestaurants(restaurantsRaw)

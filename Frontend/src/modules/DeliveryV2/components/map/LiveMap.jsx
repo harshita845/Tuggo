@@ -56,6 +56,7 @@ export const LiveMap = ({ onMapClick, onMapLoad, onPathReceived, onPolylineRecei
 
   const [directions, setDirections] = useState(null);
   const [baselineDirections, setBaselineDirections] = useState(null);
+  const [baselineFailed, setBaselineFailed] = useState(false);
   const [map, setMapInternal] = useState(null);
   const [zones, setZones] = useState([]);
   const [lastDirectionsAt, setLastDirectionsAt] = useState(0);
@@ -79,6 +80,7 @@ export const LiveMap = ({ onMapClick, onMapLoad, onPathReceived, onPolylineRecei
     setLastDirectionsAt(0);
     setDirections(null);
     setBaselineDirections(null);
+    setBaselineFailed(false);
   }, [tripStatus, activeOrder?._id]);
 
   const parsePoint = useCallback((raw) => {
@@ -165,9 +167,10 @@ export const LiveMap = ({ onMapClick, onMapLoad, onPathReceived, onPolylineRecei
   }, [directions, onPathReceived]);
 
   const directionsCallback = useCallback((result, status) => {
+    // Always update lastDirectionsAt to prevent infinite loop on failure
+    setLastDirectionsAt(Date.now());
     if (status === 'OK' && result) {
       setDirections(result);
-      setLastDirectionsAt(Date.now());
       const rawPolyline = result.routes?.[0]?.overview_polyline;
       const encodedPolyline =
         typeof rawPolyline === 'string' ? rawPolyline : rawPolyline?.points || '';
@@ -178,6 +181,8 @@ export const LiveMap = ({ onMapClick, onMapLoad, onPathReceived, onPolylineRecei
   const baselineDirectionsCallback = useCallback((result, status) => {
     if (status === 'OK' && result) {
       setBaselineDirections(result);
+    } else {
+      setBaselineFailed(true);
     }
   }, []);
 
@@ -310,7 +315,7 @@ export const LiveMap = ({ onMapClick, onMapLoad, onPathReceived, onPolylineRecei
           <DirectionsService options={directionsServiceOptions} callback={directionsCallback} />
         )}
 
-        {baselineServiceOptions && !baselineDirections && (
+        {baselineServiceOptions && !baselineDirections && !baselineFailed && (
           <DirectionsService options={baselineServiceOptions} callback={baselineDirectionsCallback} />
         )}
 

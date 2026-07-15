@@ -109,11 +109,12 @@ export const getPublicLandingSettingsController = async (req, res, next) => {
         const settings = await getLandingSettings();
         const ids = settings?.recommendedRestaurantIds || [];
         let recommendedRestaurants = [];
-        if (Array.isArray(ids) && ids.length > 0) {
-            const query = { _id: { $in: ids }, status: 'approved' };
-            if (zoneId && mongoose.Types.ObjectId.isValid(zoneId)) {
-                query.zoneId = new mongoose.Types.ObjectId(zoneId);
-            }
+        if (Array.isArray(ids) && ids.length > 0 && zoneId && mongoose.Types.ObjectId.isValid(zoneId)) {
+            const query = { 
+                _id: { $in: ids }, 
+                status: 'approved',
+                zoneId: new mongoose.Types.ObjectId(zoneId)
+            };
             recommendedRestaurants = await FoodRestaurant.find(query)
                 .select('restaurantName area city profileImage coverImages menuImages slug rating cuisines pureVegRestaurant')
                 .lean();

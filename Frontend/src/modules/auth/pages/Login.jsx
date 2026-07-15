@@ -290,10 +290,10 @@ export default function UnifiedOTPFastLogin() {
             transition={{ duration: 0.5, type: "spring", bounce: 0.4 }}
             className="w-28 h-28 md:w-32 md:h-32 rounded-full shadow-[0_8px_30px_rgba(247,98,8,0.2)] border-4 border-white dark:border-[#141414] mb-8 overflow-hidden bg-white"
           >
-            <img 
-              src={logoNew} 
-              alt="Tuggo Food Bite Logo" 
-              className="w-full h-full object-cover" 
+            <img
+              src={logoNew}
+              alt="Tuggo Food Tuggo Logo"
+              className="w-full h-full object-cover"
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = '/logo192.png'; // Fallback local logo

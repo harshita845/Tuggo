@@ -82,11 +82,11 @@ export default function CategoryPage() {
       },
       { threshold: 0.1 }
     )
-    
+
     if (observerTarget.current) {
       observer.observe(observerTarget.current)
     }
-    
+
     return () => {
       if (observerTarget.current) {
         observer.unobserve(observerTarget.current)
@@ -138,9 +138,9 @@ export default function CategoryPage() {
           return true
         }
       } catch (e) {
-        if (normalizedValue.includes(` ${normalizedKeyword} `) || 
-            normalizedValue.startsWith(`${normalizedKeyword} `) || 
-            normalizedValue.endsWith(` ${normalizedKeyword}`)) {
+        if (normalizedValue.includes(` ${normalizedKeyword} `) ||
+          normalizedValue.startsWith(`${normalizedKeyword} `) ||
+          normalizedValue.endsWith(` ${normalizedKeyword}`)) {
           console.log(`[CategoryMatch] FALLBACK MATCH: value=${value}, keyword=${keyword}`)
           return true
         }
@@ -208,9 +208,9 @@ export default function CategoryPage() {
         const list = data?.foods || []
         const approvedFoods = Array.isArray(list)
           ? list.filter((food) =>
-              String(food?.approvalStatus || "").toLowerCase() === "approved" &&
-              food?.isAvailable !== false
-            )
+            String(food?.approvalStatus || "").toLowerCase() === "approved" &&
+            food?.isAvailable !== false
+          )
           : []
 
         approvedFoodsCacheRef.current = approvedFoods
@@ -312,26 +312,26 @@ export default function CategoryPage() {
 
     const restaurantsById = new Map()
     const restaurantsByName = new Map()
-    ;(Array.isArray(restaurants) ? restaurants : []).forEach((restaurant) => {
-      const idCandidates = [
-        restaurant?.restaurantId,
-        restaurant?.id,
-        restaurant?.mongoId,
-      ]
-        .filter(Boolean)
-        .map((value) => String(value).trim())
+      ; (Array.isArray(restaurants) ? restaurants : []).forEach((restaurant) => {
+        const idCandidates = [
+          restaurant?.restaurantId,
+          restaurant?.id,
+          restaurant?.mongoId,
+        ]
+          .filter(Boolean)
+          .map((value) => String(value).trim())
 
-      idCandidates.forEach((value) => {
-        if (!restaurantsById.has(value)) {
-          restaurantsById.set(value, restaurant)
+        idCandidates.forEach((value) => {
+          if (!restaurantsById.has(value)) {
+            restaurantsById.set(value, restaurant)
+          }
+        })
+
+        const normalizedName = String(restaurant?.name || "").trim().toLowerCase()
+        if (normalizedName && !restaurantsByName.has(normalizedName)) {
+          restaurantsByName.set(normalizedName, restaurant)
         }
       })
-
-      const normalizedName = String(restaurant?.name || "").trim().toLowerCase()
-      if (normalizedName && !restaurantsByName.has(normalizedName)) {
-        restaurantsByName.set(normalizedName, restaurant)
-      }
-    })
 
     return approvedFoodsData
       .filter((food) => {
@@ -676,8 +676,8 @@ export default function CategoryPage() {
             return true
           }
 
-          const subItems = Array.isArray(subsection?.items) ? subsection.items : []
-          for (const item of subItems) {
+          const suTuggoms = Array.isArray(subsection?.items) ? subsection.items : []
+          for (const item of suTuggoms) {
             const itemNameLower = (item?.name || "").toLowerCase()
             const itemCategoryLower = (item?.categoryName || item?.category || "").toLowerCase()
             if (
@@ -750,9 +750,9 @@ export default function CategoryPage() {
         for (const subsection of section.subsections) {
           const subsectionNameLower = (subsection?.name || "").toLowerCase()
           const subsectionMatches = isAll || matchesCategoryText(subsectionNameLower, keywords)
-          const subItems = Array.isArray(subsection?.items) ? subsection.items : []
+          const suTuggoms = Array.isArray(subsection?.items) ? subsection.items : []
 
-          for (const item of subItems) {
+          for (const item of suTuggoms) {
             const itemNameLower = (item?.name || "").toLowerCase()
             const itemCategoryLower = (item?.categoryName || item?.category || "").toLowerCase()
             const itemMatches = isAll ||
@@ -1203,10 +1203,10 @@ export default function CategoryPage() {
     if (selectedCategory && selectedCategory !== 'all') {
       // Only keep restaurants that have this category
       filtered = filtered.filter(r => {
-          const categoryNameLower = selectedCategory.toLowerCase();
-          const matchesCuisine = (r.cuisines || []).some(c => c.toLowerCase().includes(categoryNameLower));
-          const hasInMenu = r.menu ? checkCategoryInMenu(r.menu, selectedCategory) : false;
-          return matchesCuisine || hasInMenu;
+        const categoryNameLower = selectedCategory.toLowerCase();
+        const matchesCuisine = (r.cuisines || []).some(c => c.toLowerCase().includes(categoryNameLower));
+        const hasInMenu = r.menu ? checkCategoryInMenu(r.menu, selectedCategory) : false;
+        return matchesCuisine || hasInMenu;
       })
     }
 
@@ -1281,7 +1281,7 @@ export default function CategoryPage() {
                       }`}
                   >
                     {cat.image ? (
-                  <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 transition-all ${isSelected ? 'border-primary shadow-lg' : 'border-transparent'
+                      <div className={`w-16 h-16 md:w-20 md:h-20 rounded-full overflow-hidden border-2 transition-all ${isSelected ? 'border-primary shadow-lg' : 'border-transparent'
                         }`}>
                         <img
                           src={cat.image}
@@ -1439,7 +1439,7 @@ export default function CategoryPage() {
                             />
                           ) : (
                             <div className="w-full h-full flex items-center justify-center text-gray-300 bg-gray-100 dark:bg-gray-800">
-                               <UtensilsCrossed className="w-8 h-8" />
+                              <UtensilsCrossed className="w-8 h-8" />
                             </div>
                           )}
                         </div>
@@ -1474,7 +1474,7 @@ export default function CategoryPage() {
                                 </>
                               )}
                             </div>
-                            
+
                             {/* Price */}
                             <div className="text-sm md:text-base font-bold text-gray-900 dark:text-white shrink-0">
                               ₹{(restaurant.categoryDishPrice || restaurant.featuredPrice || 0).toFixed(2)}

@@ -51,7 +51,7 @@ const foodLandingSettingsSchema = new mongoose.Schema(
             orders: { type: String, default: '3 billion+' }
         },
         appLinks: {
-            playStore: { type: String, default: 'https://play.google.com/store/apps/details?id=com.indian.bite.user' },
+            playStore: { type: String, default: 'https://play.google.com/store/apps/details?id=com.indian.Tuggo.user' },
             appStore: { type: String, default: '' }
         },
         socialLinks: {

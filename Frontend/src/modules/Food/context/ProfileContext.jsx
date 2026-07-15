@@ -1,4 +1,4 @@
-﻿import { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react"
+import { createContext, useContext, useState, useEffect, useMemo, useCallback } from "react"
 import { authAPI, userAPI } from "@food/api"
 import { persistUserLocation, notifyLocationUpdated, notifyDeliveryModeUpdated } from "@food/utils/locationPersistence"
 const debugLog = (...args) => {}
@@ -287,75 +287,78 @@ export function ProfileProvider({ children }) {
       }))
 
       localStorage.setItem("userAddresses", JSON.stringify(updatedAddresses))
-      notifyDeliveryModeUpdated('saved')
 
-      const selectedAddress =
-        updatedAddresses.find((addr) => addr.isDefault) || updatedAddresses[0]
+      setTimeout(() => {
+        notifyDeliveryModeUpdated('saved')
 
-      if (selectedAddress) {
-        const coordinates = selectedAddress?.location?.coordinates
-        const lngFromCoords =
-          Array.isArray(coordinates) && coordinates.length >= 2
-            ? Number(coordinates[0])
-            : null
-        const latFromCoords =
-          Array.isArray(coordinates) && coordinates.length >= 2
-            ? Number(coordinates[1])
-            : null
-        const lat = Number(
-          Number.isFinite(latFromCoords)
-            ? latFromCoords
-            : selectedAddress?.latitude ?? selectedAddress?.lat,
-        )
-        const lng = Number(
-          Number.isFinite(lngFromCoords)
-            ? lngFromCoords
-            : selectedAddress?.longitude ?? selectedAddress?.lng,
-        )
+        const selectedAddress =
+          updatedAddresses.find((addr) => addr.isDefault) || updatedAddresses[0]
 
-        if (Number.isFinite(lat) && Number.isFinite(lng)) {
-          let existingLocation = {}
-          try {
-            const raw = localStorage.getItem("userLocation")
-            existingLocation = raw ? JSON.parse(raw) || {} : {}
-          } catch {
-            existingLocation = {}
+        if (selectedAddress) {
+          const coordinates = selectedAddress?.location?.coordinates
+          const lngFromCoords =
+            Array.isArray(coordinates) && coordinates.length >= 2
+              ? Number(coordinates[0])
+              : null
+          const latFromCoords =
+            Array.isArray(coordinates) && coordinates.length >= 2
+              ? Number(coordinates[1])
+              : null
+          const lat = Number(
+            Number.isFinite(latFromCoords)
+              ? latFromCoords
+              : selectedAddress?.latitude ?? selectedAddress?.lat,
+          )
+          const lng = Number(
+            Number.isFinite(lngFromCoords)
+              ? lngFromCoords
+              : selectedAddress?.longitude ?? selectedAddress?.lng,
+          )
+
+          if (Number.isFinite(lat) && Number.isFinite(lng)) {
+            let existingLocation = {}
+            try {
+              const raw = localStorage.getItem("userLocation")
+              existingLocation = raw ? JSON.parse(raw) || {} : {}
+            } catch {
+              existingLocation = {}
+            }
+
+            const parts = [
+              selectedAddress?.additionalDetails,
+              selectedAddress?.street,
+              selectedAddress?.city,
+              selectedAddress?.state,
+              selectedAddress?.zipCode,
+            ].filter(Boolean)
+
+            const resolvedAddress =
+              parts.length > 0
+                ? parts.join(", ")
+                : selectedAddress?.formattedAddress || selectedAddress?.address || ""
+
+            const syncedLocation = {
+              ...existingLocation,
+              latitude: lat,
+              longitude: lng,
+              area:
+                selectedAddress?.additionalDetails ||
+                selectedAddress?.street ||
+                selectedAddress?.area ||
+                existingLocation?.area ||
+                "",
+              city: selectedAddress?.city || existingLocation?.city || "",
+              state: selectedAddress?.state || existingLocation?.state || "",
+              address: resolvedAddress || existingLocation?.address || "",
+              formattedAddress:
+                resolvedAddress || existingLocation?.formattedAddress || "",
+            }
+
+            persistUserLocation(syncedLocation, { mode: 'saved' })
+            notifyLocationUpdated(syncedLocation)
           }
-
-          const parts = [
-            selectedAddress?.additionalDetails,
-            selectedAddress?.street,
-            selectedAddress?.city,
-            selectedAddress?.state,
-            selectedAddress?.zipCode,
-          ].filter(Boolean)
-
-          const resolvedAddress =
-            parts.length > 0
-              ? parts.join(", ")
-              : selectedAddress?.formattedAddress || selectedAddress?.address || ""
-
-          const syncedLocation = {
-            ...existingLocation,
-            latitude: lat,
-            longitude: lng,
-            area:
-              selectedAddress?.additionalDetails ||
-              selectedAddress?.street ||
-              selectedAddress?.area ||
-              existingLocation?.area ||
-              "",
-            city: selectedAddress?.city || existingLocation?.city || "",
-            state: selectedAddress?.state || existingLocation?.state || "",
-            address: resolvedAddress || existingLocation?.address || "",
-            formattedAddress:
-              resolvedAddress || existingLocation?.formattedAddress || "",
-          }
-
-          persistUserLocation(syncedLocation, { mode: 'saved' })
-          notifyLocationUpdated(syncedLocation)
         }
-      }
+      }, 0)
 
       return updatedAddresses
     })

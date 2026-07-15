@@ -19,6 +19,7 @@ export async function calculateOrderController(req, res, next) {
         const result = await orderService.calculateOrder(userId, dto);
         return sendResponse(res, 200, 'Pricing calculated', result);
     } catch (err) {
+        console.error("calculateOrderController error:", err);
         next(err);
     }
 }

@@ -113,10 +113,8 @@ app.use('/api', responseTimeLogger);
 // API Routes
 app.use('/api', routes);
 
-// Static file serving for uploads (Local Development)
-if (config.nodeEnv !== 'production') {
-    app.use('/uploads', express.static(path.resolve(config.uploadPath)));
-}
+// Static file serving for uploads
+app.use('/uploads', express.static(path.resolve(config.uploadPath)));
 
 // Error Handling
 app.use(errorHandler);

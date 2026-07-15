@@ -151,7 +151,11 @@ function createPushPlaybackAudio() {
   );
   pushDebugLog(PUSH_DEBUG_PREFIX, "Preparing push playback sources", { audioSources });
   return audioSources.map((source) => {
-    const playbackAudio = new Audio(source);
+    const separator = source.includes("?") ? "&" : "?";
+    const finalSource = typeof import.meta !== "undefined" && import.meta.env?.DEV 
+      ? `${source}${separator}cb=${Date.now()}` 
+      : source;
+    const playbackAudio = new Audio(finalSource);
     playbackAudio.preload = "auto";
     playbackAudio.volume = 1;
     playbackAudio.load();
