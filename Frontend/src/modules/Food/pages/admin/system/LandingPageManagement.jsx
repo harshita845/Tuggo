@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useMemo } from "react"
 import { Upload, Trash2, Image as ImageIcon, Loader2, AlertCircle, CheckCircle2, ArrowUp, ArrowDown, Layout, Tag, UtensilsCrossed, ChefHat, Megaphone, Search } from "lucide-react"
 import api from "@food/api"
 import { adminAPI } from "@food/api"
+import { getMediaUrl } from "@/shared/utils/media"
 import { getModuleToken } from "@food/utils/auth"
 import { Input } from "@food/components/ui/input"
 import { Label } from "@food/components/ui/label"
@@ -1898,13 +1899,14 @@ export default function LandingPageManagement() {
                       {settings.festBannerImages && settings.festBannerImages.length > 0 && (
                         <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mt-3">
                           {settings.festBannerImages.map((imgUrl, idx) => {
-                            const isVideo = typeof imgUrl === 'string' && (imgUrl.toLowerCase().endsWith('.mp4') || imgUrl.toLowerCase().endsWith('.webm'));
+                            const currentMediaUrl = getMediaUrl(imgUrl);
+                            const isVideo = typeof currentMediaUrl === 'string' && (currentMediaUrl.toLowerCase().endsWith('.mp4') || currentMediaUrl.toLowerCase().endsWith('.webm'));
                             return (
                               <div key={idx} className="relative aspect-[4/3] rounded overflow-hidden border border-slate-200">
                                 {isVideo ? (
-                                  <video src={imgUrl} className="w-full h-full object-cover" muted loop autoPlay playsInline />
+                                  <video src={currentMediaUrl} className="w-full h-full object-cover" muted loop autoPlay playsInline />
                                 ) : (
-                                  <img src={imgUrl} alt={`Fest banner ${idx}`} className="w-full h-full object-cover" />
+                                  <img src={currentMediaUrl} alt={`Fest banner ${idx}`} className="w-full h-full object-cover" />
                                 )}
                                 <button
                                   type="button"

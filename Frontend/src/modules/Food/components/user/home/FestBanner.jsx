@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRightCircle, Leaf, Flame, Sparkles } from 'lucide-react';
 import quickSpicyLogo from "@food/assets/quicky-spicy-logo.png";
+import { getMediaUrl } from "@/shared/utils/media";
 
 // Images for different modes - Extended pool for rotation
 const defaultImages = {
@@ -65,15 +66,37 @@ export default function FestBanner({ isVegMode, images = [], hideFoodImages = fa
       {hasBgImages && (
         <div className="absolute inset-0 z-0 bg-slate-900">
           <AnimatePresence mode="popLayout">
-            <motion.img
-              key={`bg-img-${bgIndex}`}
-              src={images[bgIndex]}
-              initial={{ opacity: 0, scale: 1.05 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 1.2, ease: "easeInOut" }}
-              className="absolute inset-0 w-full h-full object-cover"
-            />
+            {(() => {
+              const currentMediaUrl = getMediaUrl(images[bgIndex]);
+              const isVideo = typeof currentMediaUrl === 'string' && (currentMediaUrl.toLowerCase().endsWith('.mp4') || currentMediaUrl.toLowerCase().endsWith('.webm'));
+              
+              if (isVideo) {
+                return (
+                  <motion.video
+                    key={`bg-vid-${bgIndex}`}
+                    src={currentMediaUrl}
+                    initial={{ opacity: 0, scale: 1.05 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 1.2, ease: "easeInOut" }}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    muted loop autoPlay playsInline
+                  />
+                );
+              }
+              
+              return (
+                <motion.img
+                  key={`bg-img-${bgIndex}`}
+                  src={currentMediaUrl}
+                  initial={{ opacity: 0, scale: 1.05 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 1.2, ease: "easeInOut" }}
+                  className="absolute inset-0 w-full h-full object-cover"
+                />
+              );
+            })()}
           </AnimatePresence>
           <div className="absolute inset-0 bg-black/35 z-10" />
         </div>
