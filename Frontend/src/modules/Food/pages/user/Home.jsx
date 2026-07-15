@@ -147,7 +147,7 @@ const roundCoord = (value) =>
     : null;
 
 export default function Home() {
-  const BACKEND_ORIGIN = API_BASE_URL.replace(/\/api\/?$/, "");
+  const BACKEND_ORIGIN = API_BASE_URL.replace(/\/api(\/v\d+)?\/?$/, "");
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const query = searchParams.get("q") || "";
@@ -2094,11 +2094,12 @@ export default function Home() {
             {festVideoActive && (
               <div className="absolute inset-0 z-0 overflow-hidden bg-slate-900 pointer-events-auto">
                 {festBannerImages.map((image, index) => {
-                  const isVideo = typeof image === 'string' && (image.toLowerCase().endsWith('.mp4') || image.toLowerCase().endsWith('.webm') || image.toLowerCase().endsWith('.ogg'));
+                  const mediaUrl = image?.startsWith('/') ? `${BACKEND_ORIGIN}${image}` : image;
+                  const isVideo = typeof mediaUrl === 'string' && (mediaUrl.toLowerCase().endsWith('.mp4') || mediaUrl.toLowerCase().endsWith('.webm') || mediaUrl.toLowerCase().endsWith('.ogg'));
                   return isVideo ? (
                     <video
-                      key={`hero-bg-${index}-${image}`}
-                      src={image}
+                      key={`hero-bg-${index}-${mediaUrl}`}
+                      src={mediaUrl}
                       className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out"
                       style={{
                         opacity: bgIndex === index ? 1 : 0,
@@ -2111,8 +2112,8 @@ export default function Home() {
                     />
                   ) : (
                     <img
-                      key={`hero-bg-${index}-${image}`}
-                      src={image}
+                      key={`hero-bg-${index}-${mediaUrl}`}
+                      src={mediaUrl}
                       alt=""
                       className="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000 ease-in-out"
                       style={{

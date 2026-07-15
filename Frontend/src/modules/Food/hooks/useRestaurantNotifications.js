@@ -202,7 +202,7 @@ export const useRestaurantNotifications = () => {
             requireInteraction: true,
             silent: false,
             vibrate: [200, 100, 200, 100, 300],
-            icon: '/logo.png',
+            icon: '/logo.png?v=2',
             data: notificationOptions.data,
           });
           return;
