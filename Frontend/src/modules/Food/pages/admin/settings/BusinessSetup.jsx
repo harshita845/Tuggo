@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { Info, Phone, Upload, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import { adminAPI } from "@food/api";
-import { setCachedSettings, updateFavicon, updateTitle } from "@food/utils/businessSettings";
+import { setCachedSettings, updateFavicon, updateTitle, normalizeSettingsUrls } from "@food/utils/businessSettings";
 import { EMAIL_REGEX } from "@/shared/utils/emailValidation";
 const debugLog = (...args) => {}
 const debugWarn = (...args) => {}
@@ -47,7 +47,8 @@ export default function BusinessSetup() {
     try {
       setLoading(true);
       const response = await adminAPI.getBusinessSettings();
-      const settings = response?.data?.data || response?.data;
+      let settings = response?.data?.data || response?.data;
+      settings = normalizeSettingsUrls(settings);
 
       if (settings) {
         setFormData({
@@ -203,7 +204,8 @@ export default function BusinessSetup() {
       }
 
       const response = await adminAPI.updateBusinessSettings(dataToSend, files);
-      const updatedSettings = response?.data?.data || response?.data;
+      let updatedSettings = response?.data?.data || response?.data;
+      updatedSettings = normalizeSettingsUrls(updatedSettings);
 
       if (updatedSettings) {
         // Update global cache immediately

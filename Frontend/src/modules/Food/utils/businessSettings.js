@@ -4,10 +4,41 @@
  */
 
 import apiClient from "@food/api/axios";
-import { API_ENDPOINTS } from "@food/api/config";
+import { API_ENDPOINTS, API_BASE_URL } from "@food/api/config";
 import { publicGetOnce } from "@food/api";
 
 const SETTINGS_KEY = 'food_business_settings';
+
+const normalizeUrl = (url) => {
+  if (!url || typeof url !== 'string') return url;
+  if (url.startsWith('http')) return url;
+  
+  let backendOrigin = '';
+  if (API_BASE_URL && API_BASE_URL.startsWith('http')) {
+    backendOrigin = API_BASE_URL.replace(/\/api(\/v\d+)?\/?$/i, '').replace(/\/+$/, '');
+  } else if (typeof window !== 'undefined') {
+    backendOrigin = window.location.origin;
+  } else {
+    backendOrigin = 'http://localhost:5000';
+  }
+  
+  return `${backendOrigin}${url.startsWith('/') ? '' : '/'}${url}`;
+};
+
+export const normalizeSettingsUrls = (settings) => {
+  if (!settings) return settings;
+  const newSettings = { ...settings };
+  if (newSettings.logo?.url) {
+    newSettings.logo = { ...newSettings.logo, url: normalizeUrl(newSettings.logo.url) };
+  }
+  if (newSettings.favicon?.url) {
+    newSettings.favicon = { ...newSettings.favicon, url: normalizeUrl(newSettings.favicon.url) };
+  }
+  if (newSettings.termsAndConditionsPdf?.url) {
+    newSettings.termsAndConditionsPdf = { ...newSettings.termsAndConditionsPdf, url: normalizeUrl(newSettings.termsAndConditionsPdf.url) };
+  }
+  return newSettings;
+};
 
 // Initialize from localStorage immediately so it's available for components on mount
 let cachedSettings = (() => {
@@ -49,9 +80,10 @@ export const loadBusinessSettings = async () => {
       // Use public endpoint that doesn't require authentication
       // Use noCache to ensure we get fresh data from server this time
       const response = await publicGetOnce(endpoint, { noCache: true });
-      const settings = response?.data?.data || response?.data;
+      const rawSettings = response?.data?.data || response?.data;
 
-      if (settings) {
+      if (rawSettings) {
+        const settings = normalizeSettingsUrls(rawSettings);
         cachedSettings = settings;
         try {
           localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
@@ -107,13 +139,14 @@ export const updateTitle = (companyName) => {
  */
 export const setCachedSettings = (settings) => {
   if (settings) {
-    cachedSettings = settings;
+    const normalizedSettings = normalizeSettingsUrls(settings);
+    cachedSettings = normalizedSettings;
     try {
-      localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(normalizedSettings));
     } catch (e) { }
 
-    updateFavicon(settings.favicon?.url);
-    updateTitle(settings.companyName);
+    updateFavicon(normalizedSettings.favicon?.url);
+    updateTitle(normalizedSettings.companyName);
   }
 };
 

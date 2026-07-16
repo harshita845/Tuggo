@@ -22,6 +22,7 @@ export const authMiddleware = (req, res, next) => {
     const token = authHeader.startsWith('Bearer ') ? authHeader.substring(7) : null;
 
     if (!token) {
+        console.log("authMiddleware: Authentication token missing");
         return sendError(res, 401, 'Authentication token missing');
     }
 
@@ -35,14 +36,19 @@ export const authMiddleware = (req, res, next) => {
             // Enforce active status in real-time - deactivated users are logged out on next request.
             FoodUser.findById(decoded.userId).select('isActive').lean().then((doc) => {
                 if (!doc || doc.isActive === false) {
+                    console.log("authMiddleware: User account is deactivated");
                     return sendError(res, 401, 'User account is deactivated');
                 }
                 apiRateLimiter(req, res, next);
-            }).catch(() => sendError(res, 401, 'Authentication failed'));
+            }).catch(() => {
+                console.log("authMiddleware: Authentication failed (DB error)");
+                return sendError(res, 401, 'Authentication failed');
+            });
             return;
         }
         apiRateLimiter(req, res, next);
     } catch (error) {
+        console.log("authMiddleware: Invalid or expired token", error.message);
         return sendError(res, 401, 'Invalid or expired token');
     }
 };

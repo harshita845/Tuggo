@@ -210,7 +210,10 @@ export const useOrderManager = () => {
         }
       } catch (completeErr) {
         console.warn('Complete call failed, but OTP was verified.', completeErr);
-        // If already completed, we proceed to show the summary with whatever we have
+        const errMsg = String(completeErr?.response?.data?.error || completeErr?.response?.data?.message || '').toLowerCase();
+        if (!errMsg.includes('already at status') && !errMsg.includes('delivered')) {
+          throw completeErr;
+        }
       }
       
       // Update local order state so Summary Modal shows 'delivered' status
