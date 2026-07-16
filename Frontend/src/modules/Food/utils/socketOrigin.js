@@ -24,10 +24,7 @@ function toSocketOriginFromApi(apiUrl) {
 
   const parsed = new URL(base, fallbackBase);
 
-  // Hardcode fallback for Tuggo production if relative API path caused it to resolve to frontend domain
-  if (parsed.hostname.includes('tuggo.in') && parsed.hostname !== 'api.tuggo.in') {
-    return 'https://api.tuggo.in';
-  }
+  // Removed hardcoded fallback for api.tuggo.in to allow proper resolution from API_BASE_URL or relative paths
 
   // In production (HTTPS), sockets usually go through port 443 via Nginx proxy, so don't force port 5001.
   if (parsed.protocol === 'https:') {
@@ -61,9 +58,7 @@ export function resolveSocketOrigin() {
     if (typeof window === 'undefined') return '';
     try {
       const parsed = new URL(window.location.origin);
-      if (parsed.hostname.includes('tuggo.in') && parsed.hostname !== 'api.tuggo.in') {
-        return 'https://api.tuggo.in';
-      }
+      // Removed hardcoded fallback for api.tuggo.in
       if (parsed.protocol !== 'https:' && SOCKET_PORT && parsed.port !== SOCKET_PORT) {
         parsed.port = SOCKET_PORT;
       }

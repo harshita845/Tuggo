@@ -46,8 +46,8 @@ export const ProfileV2 = () => {
     let backendOrigin = '';
     if (API_BASE_URL && API_BASE_URL.startsWith('http')) {
        backendOrigin = API_BASE_URL.replace(/\/api(\/v\d+)?\/?$/i, '').replace(/\/+$/, '');
-    } else if (typeof window !== 'undefined' && window.location.hostname.includes('tuggo.in')) {
-       backendOrigin = 'https://api.tuggo.in';
+    } else if (typeof window !== 'undefined') {
+       backendOrigin = window.location.origin;
     } else {
        backendOrigin = 'http://localhost:5000';
     }
