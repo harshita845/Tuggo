@@ -2705,7 +2705,7 @@ function RestaurantDetailsContent() {
                   <Button
                     variant="outline"
                     size="sm"
-                    className="flex items-center gap-1.5 whitespace-nowrap border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] relative overflow-visible"
+                    className="flex items-center gap-1.5 whitespace-nowrap border-gray-300 dark:border-gray-700 bg-white dark:bg-[#1a1a1a] dark:text-white relative overflow-visible"
                     onClick={() => setShowFilterSheet(true)}
                   >
                     <SlidersHorizontal className="h-4 w-4" />
