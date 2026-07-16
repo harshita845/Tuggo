@@ -2763,7 +2763,7 @@ function RestaurantDetailsContent() {
                     onClick={() => setShowMenuSheet(true)}
                   >
                     <Utensils className="h-3.5 w-3.5 text-white group-hover:rotate-12 transition-transform" />
-                    <span className="tracking-widest text-xs uppercase">Tuggo</span>
+                    <span className="tracking-widest text-xs uppercase">MENU</span>
                   </Button>
                 </div>
               </div>

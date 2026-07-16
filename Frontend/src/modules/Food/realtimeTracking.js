@@ -28,7 +28,7 @@ function getDeliveryPartnerOffersPath(deliveryPartnerId) {
 
 export function subscribeDeliveryPartnerOffers(deliveryPartnerId, onChange, onError) {
   if (!deliveryPartnerId || typeof onChange !== 'function') return () => {};
-  ensureFirebaseInitialized({ enableAuth: false, enableRealtimeDb: true });
+  ensureFirebaseInitialized({ enableAuth: true, enableRealtimeDb: true });
   const path = getDeliveryPartnerOffersPath(deliveryPartnerId);
   const unsub = onValue(
     ref(firebaseRealtimeDb, path),
@@ -46,7 +46,7 @@ export function subscribeOrderTracking(orderId, onChange, onError) {
   if (!orderId || typeof onChange !== 'function') return () => {};
   // Keep auth disabled on tracking pages to avoid identitytoolkit
   // getProjectConfig calls that can fail for API-key-restricted setups.
-  ensureFirebaseInitialized({ enableAuth: false, enableRealtimeDb: true });
+  ensureFirebaseInitialized({ enableAuth: true, enableRealtimeDb: true });
   const path = getOrderTrackingPath(orderId);
   const unsub = onValue(
     ref(firebaseRealtimeDb, path),
@@ -64,7 +64,7 @@ export function subscribeOrderTracking(orderId, onChange, onError) {
 
 export function subscribeDeliveryLocation(deliveryId, onChange, onError) {
   if (!deliveryId || typeof onChange !== 'function') return () => {};
-  ensureFirebaseInitialized({ enableAuth: false, enableRealtimeDb: true });
+  ensureFirebaseInitialized({ enableAuth: true, enableRealtimeDb: true });
   const path = getDeliveryLocationPath(deliveryId);
   const unsub = onValue(
     ref(firebaseRealtimeDb, path),
@@ -82,7 +82,7 @@ export function subscribeDeliveryLocation(deliveryId, onChange, onError) {
 
 export function subscribeAllDeliveryLocations(onChange, onError) {
   if (typeof onChange !== 'function') return () => {};
-  ensureFirebaseInitialized({ enableAuth: false, enableRealtimeDb: true });
+  ensureFirebaseInitialized({ enableAuth: true, enableRealtimeDb: true });
   const path = 'delivery_boys';
   const unsub = onValue(
     ref(firebaseRealtimeDb, path),
@@ -98,7 +98,7 @@ export function subscribeAllDeliveryLocations(onChange, onError) {
 
 export function subscribeRestaurantLocation(restaurantId, onChange, onError) {
   if (!restaurantId || typeof onChange !== 'function') return () => {};
-  ensureFirebaseInitialized({ enableAuth: false, enableRealtimeDb: true });
+  ensureFirebaseInitialized({ enableAuth: true, enableRealtimeDb: true });
   const path = getRestaurantLocationPath(restaurantId);
   const unsub = onValue(
     ref(firebaseRealtimeDb, path),
@@ -127,7 +127,7 @@ export async function writeDeliveryLocation({
   status = null,
 }) {
   if (!deliveryId) return false;
-  ensureFirebaseInitialized({ enableAuth: false, enableRealtimeDb: true });
+  ensureFirebaseInitialized({ enableAuth: true, enableRealtimeDb: true });
   const payload = {
     lat: toFiniteNumber(lat),
     lng: toFiniteNumber(lng),
@@ -157,7 +157,7 @@ export async function writeDeliveryLocation({
  */
 export async function writeOrderTracking(orderId, payload = {}) {
   if (!orderId) return false;
-  ensureFirebaseInitialized({ enableAuth: false, enableRealtimeDb: true });
+  ensureFirebaseInitialized({ enableAuth: true, enableRealtimeDb: true });
   const toWrite = {
     ...payload,
     lat: toFiniteNumber(payload.lat),
