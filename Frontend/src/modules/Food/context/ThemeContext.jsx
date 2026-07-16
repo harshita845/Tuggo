@@ -4,9 +4,10 @@ const ThemeContext = createContext();
 
 export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
-    const isAdmin = window.location.pathname.includes('/admin');
-    const isRestaurant = window.location.pathname.includes('/restaurant');
-    const isDelivery = window.location.pathname.includes('/delivery');
+    const path = window.location.pathname;
+    const isAdmin = path.includes('/admin');
+    const isDelivery = path.includes('/delivery');
+    const isRestaurant = path.includes('/restaurant') && !path.includes('/user/restaurants');
     const isUserApp = !isAdmin && !isRestaurant && !isDelivery;
     
     let storageKey = "userAppTheme";
@@ -27,9 +28,10 @@ export function ThemeProvider({ children }) {
   });
 
   useEffect(() => {
-    const isAdmin = window.location.pathname.includes('/admin');
-    const isRestaurant = window.location.pathname.includes('/restaurant');
-    const isDelivery = window.location.pathname.includes('/delivery');
+    const path = window.location.pathname;
+    const isAdmin = path.includes('/admin');
+    const isDelivery = path.includes('/delivery');
+    const isRestaurant = path.includes('/restaurant') && !path.includes('/user/restaurants');
     
     let storageKey = "userAppTheme";
     if (isAdmin) storageKey = "adminAppTheme";
