@@ -96,7 +96,7 @@ export const HistoryV2 = () => {
   const metrics = useMemo(() => {
      return trips.reduce((acc, trip) => {
         if (trip.status === 'Completed') {
-           acc.earnings += Number(trip.deliveryEarning || trip.amount || trip.earningAmount || 0);
+           acc.earnings += Number(trip.riderEarning || trip.deliveryEarning || trip?.pricing?.deliveryFee || trip.amount || trip.earningAmount || 0);
            const isCOD = (trip.paymentMethod || '').toLowerCase() === 'cash' || (trip.paymentMethod || '').toLowerCase() === 'cod';
            if (isCOD) acc.cod += Number(trip.codCollectedAmount || trip.orderTotal || 0);
         }
@@ -224,7 +224,7 @@ export const HistoryV2 = () => {
                    const isCompleted = (trip.status || '').toLowerCase() === 'completed';
                    const isCancelled = (trip.status || '').toLowerCase() === 'cancelled';
                    const isPending = !isCompleted && !isCancelled;
-                   const payout = Number(trip.deliveryEarning || trip.amount || trip.earningAmount || 0);
+                   const payout = Number(trip.riderEarning || trip.deliveryEarning || trip?.pricing?.deliveryFee || trip.amount || trip.earningAmount || 0);
                    const isQR = (trip.paymentMethod || '').toLowerCase() === 'razorpay_qr';
                    const isCOD = (trip.paymentMethod || '').toLowerCase() === 'cash' || (trip.paymentMethod || '').toLowerCase() === 'cod';
                    const collection = (isCOD || isQR) ? Number(trip.codCollectedAmount || trip.orderTotal || 0) : 0;
