@@ -22,7 +22,7 @@ function shouldUseHashRouter() {
 }
 
 export function AppProviders({ children }) {
-  const Router = HashRouter
+  const Router = shouldUseHashRouter() ? HashRouter : BrowserRouter
 
   return (
     <StrictMode>
