@@ -1,4 +1,4 @@
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useNavigate, Link } from "react-router-dom"
 import { motion } from "framer-motion"
 import { ShieldCheck, Truck, Star, Heart, ArrowRight, Loader2, ShieldQuestion } from "lucide-react"
@@ -26,6 +26,22 @@ export default function DeliverySignIn() {
   })
   const [loading, setLoading] = useState(false)
   const submitting = useRef(false)
+
+  // iOS Safari keyboard float fix
+  useEffect(() => {
+    const handleFocus = () => {
+      if (typeof window !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+        }, 50);
+      }
+    };
+    const inputs = document.querySelectorAll('input[type="tel"], input[type="text"]');
+    inputs.forEach(input => input.addEventListener('focus', handleFocus));
+    return () => {
+      inputs.forEach(input => input.removeEventListener('focus', handleFocus));
+    };
+  }, [])
 
   const validatePhone = (num) => {
     const digits = num.replace(/\D/g, "")
@@ -69,6 +85,21 @@ export default function DeliverySignIn() {
 
   return (
     <div className="min-h-screen bg-[#FFF9F2] dark:bg-[#0a0a0a] flex flex-col relative overflow-hidden font-['Poppins']">
+      {/* iOS Keyboard Push-up Fix */}
+      <style>{`
+        @supports (-webkit-touch-callout: none) {
+          body, html {
+            height: -webkit-fill-available;
+            overscroll-behavior-y: none;
+          }
+          .min-h-screen {
+            min-height: -webkit-fill-available !important;
+          }
+          input:focus {
+            scroll-margin-bottom: 50vh;
+          }
+        }
+      `}</style>
       {/* Soft Ambient Background Elements */}
       <div className="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] rounded-full bg-[#FFE4C4]/40 dark:bg-primary/5 blur-[100px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-[#E0F7FA]/50 dark:bg-blue-900/10 blur-[100px] pointer-events-none" />

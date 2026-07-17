@@ -60,9 +60,24 @@ export default function RestaurantOTP() {
   }, [navigate])
 
   useEffect(() => {
+    // iOS Safari keyboard float fix
+    const handleFocus = () => {
+      if (typeof window !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+        }, 50);
+      }
+    };
+    const inputs = document.querySelectorAll('input[type="tel"], input[type="text"]');
+    inputs.forEach(input => input.addEventListener('focus', handleFocus));
+    
     if (inputRefs.current[0]) {
       inputRefs.current[0].focus()
     }
+    
+    return () => {
+      inputs.forEach(input => input.removeEventListener('focus', handleFocus));
+    };
   }, [])
 
   const handleChange = (index, value) => {
@@ -229,7 +244,23 @@ export default function RestaurantOTP() {
   if (!authData) return null
 
   return (
-    <div className="min-h-screen bg-white dark:bg-[#0a0a0a] flex flex-col relative overflow-hidden font-['Poppins']">
+    <div className="min-h-[100dvh] bg-[#F7F7F7] dark:bg-[#0A0A0A] flex flex-col relative overflow-hidden font-['Poppins']">
+      {/* iOS Keyboard Push-up Fix */}
+      <style>{`
+        @supports (-webkit-touch-callout: none) {
+          body, html {
+            height: -webkit-fill-available;
+            overscroll-behavior-y: none;
+          }
+          .min-h-\\[100dvh\\] {
+            min-height: -webkit-fill-available !important;
+          }
+          input:focus {
+            scroll-margin-bottom: 50vh;
+          }
+        }
+      `}</style>
+      
       {/* Decorative Background Elements */}
       <div className="absolute top-0 left-0 w-full h-[600px] bg-gradient-to-b from-primary/10 via-primary/5 to-transparent pointer-events-none" />
       <div className="absolute top-[-100px] right-[-100px] w-[500px] h-[500px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />

@@ -243,6 +243,24 @@ export default function UnifiedOTPFastLogin() {
     return () => clearInterval(intervalId)
   }, [step, resendTimer])
 
+  // iOS Safari keyboard float fix
+  useEffect(() => {
+    if (step === 2) {
+      const handleFocus = () => {
+        if (typeof window !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+          setTimeout(() => {
+            window.scrollTo(0, 0);
+          }, 50);
+        }
+      };
+      const inputs = document.querySelectorAll('input[type="tel"]');
+      inputs.forEach(input => input.addEventListener('focus', handleFocus));
+      return () => {
+        inputs.forEach(input => input.removeEventListener('focus', handleFocus));
+      };
+    }
+  }, [step]);
+
   const formatResendTimer = (seconds) => {
     const mins = Math.floor(seconds / 60)
     const secs = seconds % 60
@@ -265,6 +283,23 @@ export default function UnifiedOTPFastLogin() {
 
   return (
     <div className="min-h-[100dvh] bg-[#F7F7F7] dark:bg-[#0A0A0A] flex flex-col relative overflow-hidden font-['Poppins']">
+      {/* iOS Keyboard Push-up Fix */}
+      <style>{`
+        @supports (-webkit-touch-callout: none) {
+          body, html {
+            height: -webkit-fill-available;
+            overscroll-behavior-y: none;
+          }
+          .min-h-\\[100dvh\\] {
+            min-height: -webkit-fill-available !important;
+          }
+          /* Prevent iOS from scrolling the fixed wrapper when input is focused */
+          input:focus {
+            scroll-margin-bottom: 50vh;
+          }
+        }
+      `}</style>
+      
       {/* Decorative Background Elements */}
       <div className="absolute top-[-15%] left-[-10%] w-[120%] h-[350px] bg-[#F76208]/10 blur-[100px] rounded-full pointer-events-none" />
 

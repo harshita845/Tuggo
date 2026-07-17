@@ -80,6 +80,22 @@ export default function DeliveryOTP() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
+  // iOS Safari keyboard float fix
+  useEffect(() => {
+    const handleFocus = () => {
+      if (typeof window !== 'undefined' && /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream) {
+        setTimeout(() => {
+          window.scrollTo(0, 0);
+        }, 50);
+      }
+    };
+    const inputs = document.querySelectorAll('input[type="tel"], input[type="text"]');
+    inputs.forEach(input => input.addEventListener('focus', handleFocus));
+    return () => {
+      inputs.forEach(input => input.removeEventListener('focus', handleFocus));
+    };
+  }, [])
+
   useEffect(() => {
     // Don't auto-focus - let user manually enter OTP
     // Focus first input only if all fields are empty (small delay to ensure inputs are rendered)
@@ -478,6 +494,22 @@ export default function DeliveryOTP() {
 
   return (
     <AnimatedPage className="min-h-screen bg-[#FFF9F2] dark:bg-[#0a0a0a] flex flex-col relative overflow-hidden font-['Poppins']">
+      {/* iOS Keyboard Push-up Fix */}
+      <style>{`
+        @supports (-webkit-touch-callout: none) {
+          body, html {
+            height: -webkit-fill-available;
+            overscroll-behavior-y: none;
+          }
+          .min-h-screen {
+            min-height: -webkit-fill-available !important;
+          }
+          input:focus {
+            scroll-margin-bottom: 50vh;
+          }
+        }
+      `}</style>
+      
       {/* Soft Ambient Background Elements */}
       <div className="absolute top-[-20%] left-[-10%] w-[70vw] h-[70vw] rounded-full bg-[#FFE4C4]/40 dark:bg-primary/5 blur-[100px] pointer-events-none" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[60vw] h-[60vw] rounded-full bg-[#E0F7FA]/50 dark:bg-blue-900/10 blur-[100px] pointer-events-none" />
