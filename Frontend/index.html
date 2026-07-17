@@ -11,6 +11,29 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@400;500;600;700;800;900&display=swap"
     rel="stylesheet">
   <title>Tuggo Food Delivery</title>
+  
+  <!-- iOS PWA Meta Tags -->
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Tuggo" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#ffffff" />
+  
+  <!-- iOS PWA Link Fix Script -->
+  <script>
+    if (("standalone" in window.navigator) && window.navigator.standalone) {
+      document.addEventListener('click', function(event) {
+        var target = event.target;
+        while(target.nodeName !== "A" && target.nodeName !== "HTML") {
+          target = target.parentNode;
+        }
+        if('href' in target && target.href.indexOf('http') !== -1 && target.href.indexOf(document.location.host) !== -1) {
+          event.preventDefault();
+          document.location.href = target.href;
+        }
+      }, false);
+    }
+  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preconnect" href="https://maps.googleapis.com">
