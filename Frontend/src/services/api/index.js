@@ -2,8 +2,10 @@
  * API layer - auth connected to new backend; rest stubbed for UI compatibility.
  */
 
+import axios from "axios";
 import apiClient, { userClient, restaurantClient, deliveryClient, adminClient } from "./axios.js";
 import { API_ENDPOINTS } from "./config.js";
+import { getUploadApiBaseUrl, getUploadAuthHeaders, joinApiUrl } from "./uploadTarget.js";
 import * as authService from "./auth.js";
 
 const stub = () =>
@@ -1910,9 +1912,31 @@ export const zoneAPI = {
   getPublicZones: (params = {}, config = {}) =>
     userClient.get("/food/zones/public", { params: params ?? {}, ...config }),
 };
+const uploadRequestWithFallback = async (paths, formData) => {
+  const baseUrl = getUploadApiBaseUrl();
+  const headers = getUploadAuthHeaders();
+  let lastError = null;
+
+  for (const path of paths) {
+    try {
+      return await axios.post(joinApiUrl(baseUrl, path), formData, {
+        timeout: 300000,
+        headers,
+      });
+    } catch (error) {
+      lastError = error;
+      if (error?.response?.status && error.response.status !== 404) {
+        throw error;
+      }
+    }
+  }
+
+  throw lastError || new Error("Upload failed");
+};
+
 export const uploadAPI = {
   /**
-   * Upload a single image file to the backend (Cloudinary-backed).
+   * Upload a single image file to the backend.
    * @param {File|Blob} file
    * @param {{ folder?: string }} options
    */
@@ -1927,9 +1951,7 @@ export const uploadAPI = {
       formData.append("folder", options.folder);
     }
 
-    return userClient.post("/uploads/image", formData, {
-      timeout: 300000,
-    });
+    return uploadRequestWithFallback(["/uploads/image", "/uploads/single"], formData);
   },
   /**
    * Upload a single non-image file (PDF) to the backend.
@@ -1947,12 +1969,9 @@ export const uploadAPI = {
       formData.append("folder", options.folder);
     }
 
-    return userClient.post("/uploads/file", formData, {
-      timeout: 300000,
-    });
+    return uploadRequestWithFallback(["/uploads/file", "/uploads/single"], formData);
   },
-};
-/** Order API (user app â€“ Bearer USER token). Minimal calls: single create/verify, list/details cached by caller. */
+};/** Order API (user app â€“ Bearer USER token). Minimal calls: single create/verify, list/details cached by caller. */
 export const orderAPI = {
   calculateOrder: (payload) =>
     userClient.post("/food/orders/calculate", payload ?? {}),
@@ -2098,3 +2117,5 @@ export const publicAPI = {
   getTerms: (key = "terms") => userClient.get(`/food/pages/${key}`),
   getBusinessSettings: () => apiClient.get("/food/admin/business-settings/public"),
 };
+
+
