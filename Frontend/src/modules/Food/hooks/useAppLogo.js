@@ -1,45 +1,58 @@
 import { useState, useEffect } from 'react';
-import defaultLogo from '@/assets/logo.png';
+import { getCachedSettings, loadBusinessSettings } from '@food/utils/businessSettings';
+
+const readDynamicLogo = (appType) => {
+  if (typeof window === 'undefined') return null;
+
+  const storedLogo = localStorage.getItem(`${appType}_logo`);
+  if (storedLogo) return storedLogo;
+
+  return getCachedSettings()?.logo?.url || null;
+};
 
 /**
  * Hook to get the dynamic app logo for the specific application (user, admin, restaurant, delivery)
- * @param {'user_app' | 'admin_app' | 'restaurant_app' | 'delivery_app'} appType 
- * @returns {string} The URL of the logo to use
+ * @param {'user_app' | 'admin_app' | 'restaurant_app' | 'delivery_app'} appType
+ * @returns {string | null} The logo URL from business settings if available
  */
 export function useAppLogo(appType = 'user_app') {
-  const [logo, setLogo] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const storedLogo = localStorage.getItem(`${appType}_logo`);
-      return storedLogo || defaultLogo;
-    }
-    return defaultLogo;
-  });
+  const [logo, setLogo] = useState(() => readDynamicLogo(appType));
 
   useEffect(() => {
     if (typeof window === 'undefined') return;
 
-    // Handler to check for logo updates
-    const handleThemeUpdate = () => {
-      const storedLogo = localStorage.getItem(`${appType}_logo`);
-      if (storedLogo && storedLogo !== logo) {
-        setLogo(storedLogo);
+    let cancelled = false;
+
+    const syncLogo = async () => {
+      const cachedLogo = readDynamicLogo(appType);
+      if (cachedLogo) {
+        if (!cancelled) setLogo(cachedLogo);
+        return;
+      }
+
+      const settings = await loadBusinessSettings();
+      if (!cancelled) {
+        setLogo(settings?.logo?.url || readDynamicLogo(appType));
       }
     };
 
-    // Initial check just in case
-    handleThemeUpdate();
+    void syncLogo();
 
-    // Listen for custom themeLoaded event dispatched by themeSettings.js
-    window.addEventListener('themeLoaded', handleThemeUpdate);
-    
-    // Also listen to storage events in case it changes in another tab
-    window.addEventListener('storage', handleThemeUpdate);
+    const handleLogoUpdate = () => {
+      void syncLogo();
+    };
+
+    window.addEventListener('themeLoaded', handleLogoUpdate);
+    window.addEventListener('businessSettingsUpdated', handleLogoUpdate);
+    window.addEventListener('storage', handleLogoUpdate);
 
     return () => {
-      window.removeEventListener('themeLoaded', handleThemeUpdate);
-      window.removeEventListener('storage', handleThemeUpdate);
+      cancelled = true;
+      window.removeEventListener('themeLoaded', handleLogoUpdate);
+      window.removeEventListener('businessSettingsUpdated', handleLogoUpdate);
+      window.removeEventListener('storage', handleLogoUpdate);
     };
-  }, [appType, logo]);
+  }, [appType]);
 
   return logo;
 }

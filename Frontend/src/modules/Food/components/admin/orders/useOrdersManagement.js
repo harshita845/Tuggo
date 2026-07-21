@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react"
 import { exportToCSV, exportToExcel, exportToPDF, exportToJSON } from "./ordersExportUtils"
-import quickSpicyLogo from "@food/assets/quicky-spicy-logo.png"
 import { getCachedSettings, loadBusinessSettings } from "@food/utils/businessSettings"
 const debugError = () => {}
 
@@ -303,7 +302,7 @@ export function useOrdersManagement(orders, statusKey, title) {
 
       const settings = getCachedSettings() || await loadBusinessSettings()
       const companyName = settings?.companyName || "Tuggo Food"
-      const logoUrl = settings?.logo?.url || quickSpicyLogo
+      const logoUrl = settings?.logo?.url || null
       const logoDataUrl = await imageUrlToDataUrl(logoUrl)
 
       const items = Array.isArray(order.items) ? order.items : []
@@ -638,4 +637,6 @@ export function useOrdersManagement(orders, statusKey, title) {
     resetColumns,
   }
 }
+
+
 

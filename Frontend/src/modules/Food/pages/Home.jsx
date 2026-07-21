@@ -1,11 +1,9 @@
 import { Link, useNavigate } from "react-router-dom"
 import { useState, useEffect } from "react"
-import { ArrowRight, Utensils, Truck, Store, Globe, Heart, Shield, Clock } from "lucide-react"
-import { motion } from "framer-motion"
+import { Utensils } from "lucide-react"
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@food/components/ui/card"
 import { Button } from "@food/components/ui/button"
 import { getCachedSettings, loadBusinessSettings } from "@food/utils/businessSettings"
-import quickSpicyLogo from "@food/assets/quicky-spicy-logo.png"
 
 export default function Home() {
   const navigate = useNavigate()
@@ -38,22 +36,23 @@ export default function Home() {
     window.addEventListener('businessSettingsUpdated', handleSettingsUpdate)
     return () => window.removeEventListener('businessSettingsUpdated', handleSettingsUpdate)
   }, [])
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background p-4">
       <Card className="w-full max-w-2xl shadow-lg">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-6">
-            {logoUrl || companyName ? (
+            {logoUrl ? (
               <img
-                src={logoUrl || quickSpicyLogo}
+                src={logoUrl}
                 alt={companyName || "Logo"}
                 className="h-16 w-auto object-contain"
-                onError={(e) => {
-                  if (e.target.src !== quickSpicyLogo) {
-                    e.target.src = quickSpicyLogo
-                  }
-                }}
+                onError={() => setLogoUrl(null)}
               />
+            ) : companyName ? (
+              <span className="text-2xl font-bold text-center text-primary">
+                {companyName}
+              </span>
             ) : (
               <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center">
                 <Utensils className="w-8 h-8 text-primary" />
@@ -103,4 +102,3 @@ export default function Home() {
     </div>
   )
 }
-

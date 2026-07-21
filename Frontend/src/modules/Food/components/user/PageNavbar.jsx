@@ -8,7 +8,6 @@ import { useLocationSelector } from "./UserLayout"
 import { FaLocationDot } from "react-icons/fa6"
 import { getCachedSettings, loadBusinessSettings } from "@food/utils/businessSettings"
 import { useAppLogo } from "@food/hooks/useAppLogo"
-import quickSpicyLogo from "@food/assets/quicky-spicy-logo.png"
 import { toast } from "sonner"
 
 export default function PageNavbar({
@@ -1018,20 +1017,13 @@ export default function PageNavbar({
                 className="h-8 w-auto sm:h-10 md:h-12 object-contain scale-[1.2] sm:scale-[1.3] origin-left"
                 crossOrigin="anonymous"
                 onError={(e) => {
-                  // Fallback to name if image fails
-                  e.target.style.display = 'none'
+                  e.currentTarget.style.display = 'none'
                 }}
               />
-            ) : companyName ? (
-              <span className={`text-base font-bold text-${textColor}`}>
-                {companyName}
-              </span>
             ) : (
-              <img
-                src={quickSpicyLogo}
-                alt="Logo"
-                className="h-8 w-auto sm:h-10 md:h-12 object-contain scale-[1.2] sm:scale-[1.3] origin-left"
-              />
+              <span className={`text-base font-bold ${textColorClass}`}>
+                {companyName || "Tuggo"}
+              </span>
             )}
           </Link>
         )}
@@ -1124,6 +1116,10 @@ export default function PageNavbar({
     </nav>
   )
 }
+
+
+
+
 
 
 

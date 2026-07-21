@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ArrowRightCircle, Leaf, Flame, Sparkles } from 'lucide-react';
-import quickSpicyLogo from "@food/assets/quicky-spicy-logo.png";
 import { getMediaUrl } from "@/shared/utils/media";
 
 // Images for different modes - Extended pool for rotation
@@ -216,3 +215,5 @@ export default function FestBanner({ isVegMode, images = [], hideFoodImages = fa
     </motion.div>
   );
 }
+
+

@@ -1,14 +1,13 @@
 import { Link } from "react-router-dom"
 import { Facebook, Twitter, Instagram, Mail, Phone, MapPin, Heart } from "lucide-react"
-import { useState, useEffect } from "react"
-import { getCachedSettings, loadBusinessSettings } from "@food/utils/businessSettings"
 import { useCompanyName } from "@food/hooks/useCompanyName"
 import { useAppLogo } from "@food/hooks/useAppLogo"
-import quickSpicyLogo from "@food/assets/quicky-spicy-logo.png"
+
 export default function Footer() {
   const companyName = useCompanyName()
   const currentYear = new Date().getFullYear()
   const logoUrl = useAppLogo('user_app')
+  const brandInitial = (companyName || 'T').charAt(0).toUpperCase()
 
   const footerLinks = {
     company: [
@@ -40,7 +39,6 @@ export default function Footer() {
     <footer className="hidden md:block bg-zinc-900 text-white mt-auto">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-8">
-          {/* Brand Section */}
           <div className="lg:col-span-2 space-y-4">
             <div
               style={{
@@ -48,17 +46,21 @@ export default function Footer() {
               }}
             >
               <div className="flex items-center gap-2 mb-4">
-                <img
-                  src={logoUrl || quickSpicyLogo}
-                  alt="Company Logo"
-                  className="h-10 w-10 rounded-full object-cover"
-                  crossOrigin="anonymous"
-                  onError={(e) => {
-                    if (e.target.src !== quickSpicyLogo) {
-                      e.target.src = quickSpicyLogo
-                    }
-                  }}
-                />
+                {logoUrl ? (
+                  <img
+                    src={logoUrl}
+                    alt="Company Logo"
+                    className="h-10 w-10 rounded-full object-cover"
+                    crossOrigin="anonymous"
+                    onError={(e) => {
+                      e.currentTarget.style.display = 'none'
+                    }}
+                  />
+                ) : (
+                  <div className="h-10 w-10 rounded-full bg-yellow-400/15 text-yellow-300 flex items-center justify-center text-sm font-bold">
+                    {brandInitial}
+                  </div>
+                )}
                 <span className="text-2xl font-bold bg-gradient-to-r from-yellow-400 to-orange-400 bg-clip-text text-transparent">
                   {companyName}
                 </span>
@@ -69,10 +71,7 @@ export default function Footer() {
               </p>
             </div>
 
-            {/* Contact Info */}
-            <div
-              className="space-y-2"
-            >
+            <div className="space-y-2">
               <div className="flex items-center gap-2 text-slate-300 text-sm">
                 <Phone className="h-4 w-4" />
                 <span>+1 (555) 123-4567</span>
@@ -87,41 +86,25 @@ export default function Footer() {
               </div>
             </div>
 
-            {/* Social Media */}
-            <div
-              className="flex items-center gap-4 pt-2"
-            >
-              <a
-                href="#"
-                className="transition-transform duration-200 hover:scale-110"
-              >
+            <div className="flex items-center gap-4 pt-2">
+              <a href="#" className="transition-transform duration-200 hover:scale-110">
                 <Facebook className="h-5 w-5" />
               </a>
-              <a
-                href="#"
-                className="transition-transform duration-200 hover:scale-110"
-              >
+              <a href="#" className="transition-transform duration-200 hover:scale-110">
                 <Twitter className="h-5 w-5" />
               </a>
-              <a
-                href="#"
-                className="transition-transform duration-200 hover:scale-110"
-              >
+              <a href="#" className="transition-transform duration-200 hover:scale-110">
                 <Instagram className="h-5 w-5" />
               </a>
             </div>
           </div>
 
-          {/* Company Links */}
-          <div
-          >
+          <div>
             <h3 className="font-bold text-lg mb-4 text-yellow-400">Company</h3>
             <ul className="space-y-2">
               {footerLinks.company.map((link, index) => (
                 <li key={index}>
-                  <Link
-                    to={link.href}
-                  >
+                  <Link to={link.href}>
                     {link.name}
                   </Link>
                 </li>
@@ -129,16 +112,12 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Support Links */}
-          <div
-          >
+          <div>
             <h3 className="font-bold text-lg mb-4 text-yellow-400">Support</h3>
             <ul className="space-y-2">
               {footerLinks.support.map((link, index) => (
                 <li key={index}>
-                  <Link
-                    to={link.href}
-                  >
+                  <Link to={link.href}>
                     {link.name}
                   </Link>
                 </li>
@@ -146,16 +125,12 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* User Links */}
-          <div
-          >
+          <div>
             <h3 className="font-bold text-lg mb-4 text-yellow-400">For You</h3>
             <ul className="space-y-2">
               {footerLinks.user.map((link, index) => (
                 <li key={index}>
-                  <Link
-                    to={link.href}
-                  >
+                  <Link to={link.href}>
                     {link.name}
                   </Link>
                 </li>
@@ -164,18 +139,14 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Bottom Bar */}
-        <div
-          className="border-t border-slate-600 pt-8 mt-8"
-        >
+        <div className="border-t border-slate-600 pt-8 mt-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-slate-400 text-sm text-center md:text-left">
               � {currentYear} {companyName}. All rights reserved.
             </p>
             <div className="flex items-center gap-1 text-slate-400 text-sm">
               <span>Made with</span>
-              <span
-              >
+              <span>
                 <Heart className="h-4 w-4 fill-red-500 text-red-500" />
               </span>
               <span>for food lovers</span>
@@ -198,4 +169,3 @@ export default function Footer() {
     </footer>
   )
 }
-
