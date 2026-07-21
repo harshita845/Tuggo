@@ -7,27 +7,25 @@ const WEBVIEW_SESSION_CACHE_BUSTER = `${Date.now()}-${Math.random().toString(36)
 function OfferBannerContent({ item }) {
   if (!item) return null;
   return (
-    <>
-      <p className="text-white text-xs sm:text-sm font-medium uppercase tracking-wide mb-1 drop-shadow-md">
+    <div className="flex items-center w-full gap-2 px-3 py-1.5">
+      <span className="text-[11px] font-semibold text-white uppercase whitespace-nowrap">
         {item.dText}
-      </p>
-      <div className="h-px bg-white/40 mb-2 w-24"></div>
-      <div className="flex items-center gap-2">
-        <p className="text-white text-base sm:text-lg font-bold drop-shadow-md truncate max-w-[60%]">
-          {item.name}
-        </p>
-        <div className="flex items-center gap-1.5 shrink-0 ml-2">
-          {item.discountedPrice && item.discountedPrice < item.price ? (
-            <>
-              <span className="text-xs sm:text-sm text-white/80 line-through font-medium drop-shadow-sm">₹{Math.round(item.price)}</span>
-              <span className="font-black text-white text-base sm:text-lg drop-shadow-md">₹{Math.round(item.discountedPrice)}</span>
-            </>
-          ) : (
-            <span className="font-black text-white text-base sm:text-lg drop-shadow-md">₹{Math.round(item.price)}</span>
-          )}
-        </div>
+      </span>
+      <div className="w-[3px] h-[3px] rounded-full bg-white/60 shrink-0" />
+      <span className="font-medium text-white/95 text-[11px] whitespace-nowrap truncate flex-1">
+        {item.name}
+      </span>
+      <div className="flex items-center gap-1.5 shrink-0 pl-1">
+        {item.discountedPrice && item.discountedPrice < item.price ? (
+          <>
+            <span className="text-[10px] text-white/70 line-through">₹{Math.round(item.price)}</span>
+            <span className="font-semibold text-white text-[11px]">₹{Math.round(item.discountedPrice)}</span>
+          </>
+        ) : (
+          <span className="font-semibold text-white text-[11px]">₹{Math.round(item.price)}</span>
+        )}
       </div>
-    </>
+    </div>
   );
 }
 
@@ -456,33 +454,27 @@ const RestaurantImageCarousel = React.memo(
         {/* Shine Effect */}
         <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full transition-transform duration-1000 group-hover:animate-shine" />
 
-        {/* Discount Badge */}
-        {restaurant.discount > 0 && (
-          <div className="absolute top-3 left-0 px-3 py-1.5 bg-gradient-to-r from-green-600 to-green-500 text-white text-[10px] sm:text-xs font-bold rounded-r-lg shadow-md uppercase tracking-wide flex items-center gap-1.5 z-[11]">
-            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.864 2.227l8.909 8.91a2.182 2.182 0 010 3.085l-7.364 7.364a2.182 2.182 0 01-3.085 0l-8.91-8.91A2.182 2.182 0 012 11.137V4.41A2.182 2.182 0 014.182 2.23h6.727a2.182 2.182 0 011.955-.003z" /></svg>
-            {restaurant.discount}% OFF ON ALL MEALS
-          </div>
-        )}
+        {/* Discount Badge removed and moved to HomeRestaurantCard */}
 
-        {/* Sliding Green Banner for Items or Static Fallback */}
+        {/* Sliding Minimal Blue Banner for Items or Static Fallback */}
         {bannerItems.length > 0 ? (
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#00b761] to-transparent z-[20]" style={{ height: '40%' }}>
-            <div className="h-full flex flex-col justify-end w-full relative overflow-hidden">
+          <div className="absolute bottom-0 left-0 right-0 bg-[#ea580c] z-[20]">
+            <div className="w-full relative overflow-hidden h-[24px]">
               {priority && bannerItems.length > 1 ? (
                 <AnimatePresence mode="wait">
                   <motion.div
                     key={currentItemIndex}
-                    initial={{ x: "100%", opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    exit={{ x: "-100%", opacity: 0 }}
-                    transition={{ duration: 0.5, ease: "easeInOut" }}
-                    className="absolute inset-0 flex flex-col justify-end pl-4 sm:pl-5 pb-4 sm:pb-5"
+                    initial={{ y: 15, opacity: 0 }}
+                    animate={{ y: 0, opacity: 1 }}
+                    exit={{ y: -15, opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="absolute inset-0 flex items-center w-full"
                   >
                     <OfferBannerContent item={bannerItems[currentItemIndex]} />
                   </motion.div>
                 </AnimatePresence>
               ) : (
-                <div className="absolute inset-0 flex flex-col justify-end pl-4 sm:pl-5 pb-4 sm:pb-5">
+                <div className="absolute inset-0 flex items-center w-full">
                   <OfferBannerContent item={bannerItems[0]} />
                 </div>
               )}
@@ -496,18 +488,13 @@ const RestaurantImageCarousel = React.memo(
           }
           if (maxDiscount > 0) {
             return (
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#00b761] to-transparent z-[20]" style={{ height: '40%' }}>
-                <div className="h-full flex flex-col justify-end">
-                  <div className="pl-4 sm:pl-5 pb-4 sm:pb-5">
-                    <p className="text-white text-xs sm:text-sm font-medium uppercase tracking-wide mb-1">
-                      SPECIAL OFFER
-                    </p>
-                    <div className="h-px bg-white/30 mb-2 w-24"></div>
-                    <p className="text-white text-base sm:text-lg font-bold">
-                      UP TO {maxDiscount}% OFF
-                    </p>
-                  </div>
-                </div>
+              <div className="absolute bottom-0 left-0 right-0 bg-[#ea580c] px-3 py-1.5 z-[20] flex items-center justify-between">
+                <span className="text-[11px] font-semibold text-white uppercase whitespace-nowrap">
+                  SPECIAL OFFER
+                </span>
+                <span className="font-medium text-white/95 text-[11px] whitespace-nowrap">
+                  UP TO {maxDiscount}% OFF
+                </span>
               </div>
             );
           }

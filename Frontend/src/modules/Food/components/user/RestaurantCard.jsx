@@ -238,43 +238,41 @@ const RestaurantImageCarousel = React.memo(({ restaurant, priority = false, back
       
       {/* Discount Badge if any */}
       {restaurant.discount > 0 && (
-        <div className="absolute top-3 left-0 px-3 py-1.5 bg-gradient-to-r from-green-600 to-green-500 text-white text-[10px] sm:text-xs font-bold rounded-r-lg shadow-md uppercase tracking-wide flex items-center gap-1.5 z-10">
-          <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.864 2.227l8.909 8.91a2.182 2.182 0 010 3.085l-7.364 7.364a2.182 2.182 0 01-3.085 0l-8.91-8.91A2.182 2.182 0 012 11.137V4.41A2.182 2.182 0 014.182 2.23h6.727a2.182 2.182 0 011.955-.003z"/></svg>
+        <div className="absolute top-3 left-0 px-2.5 py-1 bg-[#ea580c] text-white text-[10px] sm:text-[11px] font-medium rounded-r shadow-sm uppercase tracking-wide flex items-center gap-1.5 z-10">
+          <svg className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12.864 2.227l8.909 8.91a2.182 2.182 0 010 3.085l-7.364 7.364a2.182 2.182 0 01-3.085 0l-8.91-8.91A2.182 2.182 0 012 11.137V4.41A2.182 2.182 0 014.182 2.23h6.727a2.182 2.182 0 011.955-.003z"/></svg>
           {restaurant.discount}% OFF ON ALL MEALS
         </div>
       )}
 
-      {/* Sliding Green Banner for Items */}
+      {/* Sliding Minimal Blue Banner for Items */}
       {bannerItems.length > 0 && (
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-r from-[#1b4332] via-[#2d6a4f]/95 to-transparent pl-3 pr-6 py-2.5 z-[15]">
-          <div className="w-full relative overflow-hidden h-[42px]">
+        <div className="absolute bottom-0 left-0 right-0 bg-[#ea580c] px-3 py-1.5 z-[15]">
+          <div className="w-full relative overflow-hidden h-[18px]">
             <AnimatePresence mode="wait">
               <motion.div
                 key={currentItemIndex}
-                initial={{ x: 20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                exit={{ x: -20, opacity: 0 }}
+                initial={{ y: 15, opacity: 0 }}
+                animate={{ y: 0, opacity: 1 }}
+                exit={{ y: -15, opacity: 0 }}
                 transition={{ duration: 0.3 }}
-                className="absolute inset-0 flex flex-col justify-center w-full"
+                className="absolute inset-0 flex items-center w-full"
               >
-                <div className="flex items-center w-full">
-                  <span className="text-[10px] font-bold tracking-[0.08em] text-white/90 uppercase line-clamp-1 drop-shadow-sm">
+                <div className="flex items-center w-full gap-2">
+                  <span className="text-[11px] font-semibold text-white uppercase whitespace-nowrap">
                     {bannerItems[currentItemIndex].dText}
                   </span>
-                </div>
-                <div className="h-[1px] w-[85%] bg-white/20 my-[4px]" />
-                <div className="flex items-center justify-between w-[95%]">
-                  <span className="font-extrabold text-white text-sm tracking-wide line-clamp-1 truncate mr-3 drop-shadow-md">
+                  <div className="w-[3px] h-[3px] rounded-full bg-white/60 shrink-0" />
+                  <span className="font-medium text-white/95 text-[11px] whitespace-nowrap truncate flex-1">
                     {bannerItems[currentItemIndex].name}
                   </span>
-                  <div className="flex items-center gap-1.5 shrink-0">
+                  <div className="flex items-center gap-1.5 shrink-0 pl-1">
                     {bannerItems[currentItemIndex].discountedPrice && bannerItems[currentItemIndex].discountedPrice < bannerItems[currentItemIndex].price ? (
                       <>
-                        <span className="text-[11px] text-white/70 line-through font-medium drop-shadow-sm">₹{Math.round(bannerItems[currentItemIndex].price)}</span>
-                        <span className="font-black text-white text-sm drop-shadow-md">₹{Math.round(bannerItems[currentItemIndex].discountedPrice)}</span>
+                        <span className="text-[10px] text-white/70 line-through">₹{Math.round(bannerItems[currentItemIndex].price)}</span>
+                        <span className="font-semibold text-white text-[11px]">₹{Math.round(bannerItems[currentItemIndex].discountedPrice)}</span>
                       </>
                     ) : (
-                      <span className="font-black text-white text-sm drop-shadow-md">₹{Math.round(bannerItems[currentItemIndex].price)}</span>
+                      <span className="font-semibold text-white text-[11px]">₹{Math.round(bannerItems[currentItemIndex].price)}</span>
                     )}
                   </div>
                 </div>
