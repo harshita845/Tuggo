@@ -570,8 +570,6 @@ async function registerNativeWebViewFcmToken(moduleName) {
     voipToken: normalizedVoipToken || undefined,
     pushPlatform: "mobile",
     devicePlatform,
-    appRole: moduleName,
-    deviceId: getDeviceId(moduleName, devicePlatform, normalizedToken, normalizedVoipToken),
   });
 
   pushDebugLog(PUSH_DEBUG_PREFIX, "Registered native WebView push device", {
@@ -949,3 +947,4 @@ export async function registerWebPushForCurrentModule(pathname = window.location
   await registerNativeWebViewFcmToken(moduleName);
   return null;
 }
+

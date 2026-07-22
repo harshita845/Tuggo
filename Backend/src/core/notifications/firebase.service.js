@@ -243,10 +243,9 @@ const normalizeDevicePlatform = (platform) => {
 
 const normalizePushPlatform = (platform) => (platform === 'mobile' ? 'mobile' : 'web');
 
-const findPushDeviceIndex = (devices = [], { deviceId, fcmToken, voipToken, devicePlatform }) =>
+const findPushDeviceIndex = (devices = [], { fcmToken, voipToken, devicePlatform }) =>
     devices.findIndex((device) => {
         if (!device || typeof device !== 'object') return false;
-        if (deviceId && sanitizeString(device.deviceId) === deviceId) return true;
         if (fcmToken && sanitizeString(device.fcmToken) === fcmToken) return true;
         if (voipToken && sanitizeString(device.voipToken) === voipToken) return true;
         if (devicePlatform === 'ios' && voipToken && sanitizeString(device.voipToken) === voipToken) return true;
@@ -287,12 +286,9 @@ export const upsertOwnerPushDevice = async ({
     voipToken,
     pushPlatform = 'mobile',
     devicePlatform = 'unknown',
-    appRole = '',
-    deviceId = '',
 } = {}) => {
     const normalizedFcmToken = sanitizeString(fcmToken);
     const normalizedVoipToken = sanitizeString(voipToken);
-    const normalizedDeviceId = sanitizeString(deviceId);
     const normalizedPushPlatform = normalizePushPlatform(pushPlatform);
     const normalizedDevicePlatform = normalizeDevicePlatform(devicePlatform);
 
@@ -312,7 +308,6 @@ export const upsertOwnerPushDevice = async ({
 
     const pushDevices = Array.isArray(doc.pushDevices) ? [...doc.pushDevices] : [];
     const index = findPushDeviceIndex(pushDevices, {
-        deviceId: normalizedDeviceId,
         fcmToken: normalizedFcmToken,
         voipToken: normalizedVoipToken,
         devicePlatform: normalizedDevicePlatform,
@@ -324,8 +319,6 @@ export const upsertOwnerPushDevice = async ({
         ...(normalizedVoipToken ? { voipToken: normalizedVoipToken } : {}),
         pushPlatform: normalizedPushPlatform,
         devicePlatform: normalizedDevicePlatform,
-        appRole: sanitizeString(appRole || ownerType).toLowerCase(),
-        ...(normalizedDeviceId ? { deviceId: normalizedDeviceId } : {}),
         lastSeenAt: new Date(),
     };
 
@@ -416,9 +409,7 @@ export const removeFirebaseDeviceToken = async ({ ownerType, ownerId, token, pla
 
 export const removeOwnerPushDevice = async ({ ownerType, ownerId, fcmToken, voipToken, deviceId } = {}) => {
     const normalizedFcmToken = sanitizeString(fcmToken);
-    const normalizedVoipToken = sanitizeString(voipToken);
-    const normalizedDeviceId = sanitizeString(deviceId);
-    if (!ownerType || !ownerId || (!normalizedFcmToken && !normalizedVoipToken && !normalizedDeviceId)) {
+    const normalizedVoipToken = sanitizeString(voipToken);    if (!ownerType || !ownerId || (!normalizedFcmToken && !normalizedVoipToken && !normalizedDeviceId)) {
         throw new Error('ownerType, ownerId and a token or deviceId are required.');
     }
 
@@ -625,3 +616,7 @@ export const notifyOwnersSafely = async (targets = [], payload = {}) => {
         return [];
     }
 };
+
+
+
+

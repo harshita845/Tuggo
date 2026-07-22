@@ -152,7 +152,6 @@ router.post('/device/save', authMiddleware, async (req, res, next) => {
         const voipToken = String(req.body?.voipToken || '').trim();
         const pushPlatform = req.body?.pushPlatform === 'mobile' ? 'mobile' : 'web';
         const devicePlatform = String(req.body?.devicePlatform || '').trim().toLowerCase() || 'unknown';
-        const appRole = String(req.body?.appRole || ownerType || '').trim().toLowerCase();
         const deviceId = String(req.body?.deviceId || '').trim();
 
         if (!ownerType || !ownerId) {
@@ -170,7 +169,6 @@ router.post('/device/save', authMiddleware, async (req, res, next) => {
             voipToken,
             pushPlatform,
             devicePlatform,
-            appRole,
             deviceId,
         });
 
@@ -289,3 +287,5 @@ router.post('/test', authMiddleware, async (req, res, next) => {
 });
 
 export default router;
+
+
