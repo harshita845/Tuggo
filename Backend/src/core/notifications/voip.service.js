@@ -1,5 +1,6 @@
 import { existsSync, readFileSync } from 'fs';
 import http2 from 'http2';
+import jwt from 'jsonwebtoken';
 import { resolve } from 'path';
 import { FoodUser } from '../users/user.model.js';
 import { FoodRestaurant } from '../../modules/food/restaurant/models/restaurant.model.js';
@@ -60,26 +61,50 @@ const getApnsAuthority = () => {
     return useProduction ? APNS_AUTHORITY.production : APNS_AUTHORITY.sandbox;
 };
 
-const getApnsClientOptions = () => {
-    const pfxPathValue = sanitizeString(config.apnsVoipPfxPath || process.env.APNS_VOIP_PFX_PATH || process.env.APNS_VOIP_CERT_PATH);
-    if (!pfxPathValue) {
-        throw new Error('APNS_VOIP_PFX_PATH is not configured.');
+let apnsJwtToken = null;
+let apnsJwtTokenExpiry = 0;
+
+const getApnsJwtToken = () => {
+    const now = Math.floor(Date.now() / 1000);
+    if (apnsJwtToken && apnsJwtTokenExpiry > now) {
+        return apnsJwtToken;
+    }
+
+    const teamId = sanitizeString(process.env.APNS_TEAM_ID);
+    const keyId = sanitizeString(process.env.APNS_KEY_ID);
+    const keyPathValue = sanitizeString(process.env.APNS_AUTH_KEY_PATH);
+
+    if (!teamId || !keyId || !keyPathValue) {
+        throw new Error('APNS_TEAM_ID, APNS_KEY_ID, and APNS_AUTH_KEY_PATH must be set in .env for token-based APNs.');
     }
 
     const candidatePaths = [
-        resolve(process.cwd(), pfxPathValue),
-        resolve(process.cwd(), pfxPathValue.replace(/^Backend[\\/]/i, '')),
-        resolve(process.cwd(), 'Certificates.p12')
+        resolve(process.cwd(), keyPathValue),
+        resolve(process.cwd(), keyPathValue.replace(/^Backend[\\/]/i, ''))
     ];
-    const pfxPath = candidatePaths.find((candidate) => existsSync(candidate));
-    if (!pfxPath) {
-        throw new Error(`APNS VoIP certificate not found. Tried: ${candidatePaths.join(', ')}`);
+    const keyPath = candidatePaths.find((candidate) => existsSync(candidate));
+    if (!keyPath) {
+        throw new Error(`APNS Auth Key (.p8) not found. Tried: ${candidatePaths.join(', ')}`);
     }
 
-    return {
-        pfx: readFileSync(pfxPath),
-        passphrase: sanitizeString(config.apnsVoipCertPassword || process.env.APNS_VOIP_CERT_PASSWORD || process.env.VOIP_CERT_PASSWORD),
-    };
+    const privateKey = readFileSync(keyPath, 'utf8');
+
+    apnsJwtToken = jwt.sign(
+        {
+            iss: teamId,
+            iat: now,
+        },
+        privateKey,
+        {
+            algorithm: 'ES256',
+            header: {
+                alg: 'ES256',
+                kid: keyId,
+            },
+        }
+    );
+    apnsJwtTokenExpiry = now + 3000; // valid for 50 mins
+    return apnsJwtToken;
 };
 
 const getApnsClient = () => {
@@ -88,7 +113,7 @@ const getApnsClient = () => {
         return cachedApnsClient;
     }
 
-    const client = http2.connect(authority, getApnsClientOptions());
+    const client = http2.connect(authority);
     client.on('error', (error) => {
         logger.warn(`APNS VoIP client error: ${error?.message || error}`);
     });
@@ -190,6 +215,7 @@ export const sendVoipPushNotification = async (tokens, payload = {}, options = {
             'apns-push-type': 'voip',
             'apns-priority': '10',
             'content-type': 'application/json',
+            'authorization': `bearer ${getApnsJwtToken()}`,
         });
 
         let responseBody = '';
