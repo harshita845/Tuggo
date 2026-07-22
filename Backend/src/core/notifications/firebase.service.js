@@ -409,7 +409,10 @@ export const removeFirebaseDeviceToken = async ({ ownerType, ownerId, token, pla
 
 export const removeOwnerPushDevice = async ({ ownerType, ownerId, fcmToken, voipToken, deviceId } = {}) => {
     const normalizedFcmToken = sanitizeString(fcmToken);
-    const normalizedVoipToken = sanitizeString(voipToken);    if (!ownerType || !ownerId || (!normalizedFcmToken && !normalizedVoipToken && !normalizedDeviceId)) {
+    const normalizedVoipToken = sanitizeString(voipToken);
+    const normalizedDeviceId = sanitizeString(deviceId);
+
+    if (!ownerType || !ownerId || (!normalizedFcmToken && !normalizedVoipToken && !normalizedDeviceId)) {
         throw new Error('ownerType, ownerId and a token or deviceId are required.');
     }
 
@@ -616,6 +619,7 @@ export const notifyOwnersSafely = async (targets = [], payload = {}) => {
         return [];
     }
 };
+
 
 
 

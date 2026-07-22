@@ -66,9 +66,14 @@ const getApnsClientOptions = () => {
         throw new Error('APNS_VOIP_PFX_PATH is not configured.');
     }
 
-    const pfxPath = resolve(process.cwd(), pfxPathValue);
-    if (!existsSync(pfxPath)) {
-        throw new Error(`APNS VoIP certificate not found at ${pfxPath}`);
+    const candidatePaths = [
+        resolve(process.cwd(), pfxPathValue),
+        resolve(process.cwd(), pfxPathValue.replace(/^Backend[\\/]/i, '')),
+        resolve(process.cwd(), 'Certificates.p12')
+    ];
+    const pfxPath = candidatePaths.find((candidate) => existsSync(candidate));
+    if (!pfxPath) {
+        throw new Error(`APNS VoIP certificate not found. Tried: ${candidatePaths.join(', ')}`);
     }
 
     return {
@@ -254,3 +259,4 @@ export const sendUrgentOrderNotificationsToOwners = async (targets = [], payload
     }
     return results;
 };
+
