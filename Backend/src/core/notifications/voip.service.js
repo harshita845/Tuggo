@@ -72,13 +72,15 @@ const getApnsJwtToken = () => {
 
     const teamId = sanitizeString(process.env.APNS_TEAM_ID);
     const keyId = sanitizeString(process.env.APNS_KEY_ID);
-    const keyPathValue = sanitizeString(process.env.APNS_AUTH_KEY_PATH);
+    const keyPathValue = sanitizeString(process.env.APNS_VOIP_P8_PATH || process.env.APNS_AUTH_KEY_PATH);
 
     if (!teamId || !keyId || !keyPathValue) {
-        throw new Error('APNS_TEAM_ID, APNS_KEY_ID, and APNS_AUTH_KEY_PATH must be set in .env for token-based APNs.');
+        throw new Error('APNS_TEAM_ID, APNS_KEY_ID, and APNS_VOIP_P8_PATH must be set in .env for token-based APNs.');
     }
 
+    // Try absolute path first, then relative to cwd, then relative stripping "Backend"
     const candidatePaths = [
+        keyPathValue,
         resolve(process.cwd(), keyPathValue),
         resolve(process.cwd(), keyPathValue.replace(/^Backend[\\/]/i, ''))
     ];
