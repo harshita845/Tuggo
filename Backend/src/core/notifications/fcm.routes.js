@@ -4,8 +4,10 @@ import { verifyAccessToken } from '../auth/token.util.js';
 import { sendError } from '../../utils/response.js';
 import {
     removeFirebaseDeviceToken,
+    removeOwnerPushDevice,
     sendTestNotification,
-    upsertFirebaseDeviceToken
+    upsertFirebaseDeviceToken,
+    upsertOwnerPushDevice
 } from './firebase.service.js';
 import { FoodUser } from '../users/user.model.js';
 import { FoodRestaurant } from '../../modules/food/restaurant/models/restaurant.model.js';
@@ -42,7 +44,7 @@ router.get('/check', (req, res) => {
         success: true, 
         message: 'FCM tokens service is operational',
         timestamp: new Date().toISOString(),
-        endpoints: ['/save', '/mobile/save', '/remove', '/test', '/test-set-token/:phone/:token']
+        endpoints: ['/save', '/mobile/save', '/device/save', '/remove', '/device/remove', '/test', '/test-set-token/:phone/:token']
     });
 });
 
@@ -143,6 +145,45 @@ router.post('/mobile/save', authMiddleware, async (req, res, next) => {
     }
 });
 
+router.post('/device/save', authMiddleware, async (req, res, next) => {
+    try {
+        const { ownerType, ownerId } = getOwnerContext(req);
+        const fcmToken = String(req.body?.fcmToken || req.body?.token || '').trim();
+        const voipToken = String(req.body?.voipToken || '').trim();
+        const pushPlatform = req.body?.pushPlatform === 'mobile' ? 'mobile' : 'web';
+        const devicePlatform = String(req.body?.devicePlatform || '').trim().toLowerCase() || 'unknown';
+        const appRole = String(req.body?.appRole || ownerType || '').trim().toLowerCase();
+        const deviceId = String(req.body?.deviceId || '').trim();
+
+        if (!ownerType || !ownerId) {
+            return sendError(res, 401, 'Authentication required');
+        }
+
+        if (!fcmToken && !voipToken) {
+            return sendError(res, 400, 'At least one push token is required');
+        }
+
+        const result = await upsertOwnerPushDevice({
+            ownerType,
+            ownerId,
+            fcmToken,
+            voipToken,
+            pushPlatform,
+            devicePlatform,
+            appRole,
+            deviceId,
+        });
+
+        return res.status(200).json({
+            success: true,
+            message: 'Push device saved successfully',
+            data: result?.data || { ownerType, ownerId, pushPlatform, devicePlatform }
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
 const handleRemoveToken = async (req, res, next) => {
     try {
         // Optionally try to parse authorization header first to scope it, 
@@ -173,7 +214,17 @@ const handleRemoveToken = async (req, res, next) => {
                 models.map((model) =>
                     model.updateMany(
                         { $or: [{ fcmTokens: token }, { fcmTokenMobile: token }] },
-                        { $pull: { fcmTokens: token, fcmTokenMobile: token } }
+                        {
+                            $pull: { fcmTokens: token, fcmTokenMobile: token },
+                        }
+                    )
+                )
+            );
+            await Promise.all(
+                models.map((model) =>
+                    model.updateMany(
+                        { 'pushDevices.fcmToken': token },
+                        { $pull: { pushDevices: { fcmToken: token } } }
                     )
                 )
             );
@@ -191,6 +242,31 @@ const handleRemoveToken = async (req, res, next) => {
 // Remove FCM token routes do NOT enforce authMiddleware to guarantee clean logouts when sessions expire.
 router.delete('/remove', handleRemoveToken);
 router.delete('/remove/:token', handleRemoveToken);
+
+router.delete('/device/remove', authMiddleware, async (req, res, next) => {
+    try {
+        const { ownerType, ownerId } = getOwnerContext(req);
+        if (!ownerType || !ownerId) {
+            return sendError(res, 401, 'Authentication required');
+        }
+
+        const fcmToken = String(req.body?.fcmToken || req.query?.fcmToken || '').trim();
+        const voipToken = String(req.body?.voipToken || req.query?.voipToken || '').trim();
+        const deviceId = String(req.body?.deviceId || req.query?.deviceId || '').trim();
+
+        if (!fcmToken && !voipToken && !deviceId) {
+            return sendError(res, 400, 'A device identifier or token is required');
+        }
+
+        await removeOwnerPushDevice({ ownerType, ownerId, fcmToken, voipToken, deviceId });
+        return res.status(200).json({
+            success: true,
+            message: 'Push device removed'
+        });
+    } catch (error) {
+        next(error);
+    }
+});
 
 router.post('/test', authMiddleware, async (req, res, next) => {
     try {

@@ -66,6 +66,14 @@ export const config = {
     firebaseWebMeasurementId: process.env.VITE_FIREBASE_MEASUREMENT_ID || process.env.FIREBASE_MEASUREMENT_ID,
     firebaseWebVapidKey: process.env.VITE_FIREBASE_VAPID_KEY || process.env.FIREBASE_VAPID_KEY,
 
+    // Apple VoIP / APNs
+    apnsVoipPfxPath: process.env.APNS_VOIP_PFX_PATH || process.env.APNS_VOIP_CERT_PATH,
+    apnsVoipCertPassword: process.env.APNS_VOIP_CERT_PASSWORD || process.env.VOIP_CERT_PASSWORD,
+    apnsVoipTopic: process.env.APNS_VOIP_TOPIC || process.env.APNS_TOPIC,
+    apnsVoipTopicRestaurant: process.env.APNS_VOIP_TOPIC_RESTAURANT || process.env.APNS_TOPIC_RESTAURANT,
+    apnsVoipTopicDelivery: process.env.APNS_VOIP_TOPIC_DELIVERY || process.env.APNS_TOPIC_DELIVERY,
+    apnsProduction: process.env.APNS_PRODUCTION || 'true',
+
     // Socket.io
     socketCorsOrigin: process.env.SOCKET_CORS_ORIGIN || '*',
 
@@ -127,6 +135,12 @@ export const updateConfig = () => {
     config.firebaseWebAppId = process.env.VITE_FIREBASE_APP_ID || process.env.FIREBASE_APP_ID || config.firebaseWebAppId;
     config.firebaseWebMeasurementId = process.env.VITE_FIREBASE_MEASUREMENT_ID || process.env.FIREBASE_MEASUREMENT_ID || config.firebaseWebMeasurementId;
     config.firebaseWebVapidKey = process.env.VITE_FIREBASE_VAPID_KEY || process.env.FIREBASE_VAPID_KEY || config.firebaseWebVapidKey;
+    config.apnsVoipPfxPath = process.env.APNS_VOIP_PFX_PATH || process.env.APNS_VOIP_CERT_PATH || config.apnsVoipPfxPath;
+    config.apnsVoipCertPassword = process.env.APNS_VOIP_CERT_PASSWORD || process.env.VOIP_CERT_PASSWORD || config.apnsVoipCertPassword;
+    config.apnsVoipTopic = process.env.APNS_VOIP_TOPIC || process.env.APNS_TOPIC || config.apnsVoipTopic;
+    config.apnsVoipTopicRestaurant = process.env.APNS_VOIP_TOPIC_RESTAURANT || process.env.APNS_TOPIC_RESTAURANT || config.apnsVoipTopicRestaurant;
+    config.apnsVoipTopicDelivery = process.env.APNS_VOIP_TOPIC_DELIVERY || process.env.APNS_TOPIC_DELIVERY || config.apnsVoipTopicDelivery;
+    config.apnsProduction = process.env.APNS_PRODUCTION || config.apnsProduction;
     config.socketCorsOrigin = process.env.SOCKET_CORS_ORIGIN || config.socketCorsOrigin;
     config.razorpayKeyId = process.env.RAZORPAY_KEY_ID || config.razorpayKeyId;
     config.razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET || config.razorpayKeySecret;
@@ -141,3 +155,4 @@ export const updateConfig = () => {
     config.petpoojaAppSecret = process.env.PETPOOJA_APP_SECRET || config.petpoojaAppSecret;
     config.googleMapsApiKey = process.env.GOOGLE_MAPS_API_KEY || process.env.VITE_GOOGLE_MAPS_API_KEY || config.googleMapsApiKey;
 };
+

@@ -110,11 +110,14 @@ export const ProfileV2 = () => {
     try {
       setLogoutSubmitting(true)
       let fcmToken = null;
+      let voipToken = null;
       let platform = "web";
+      let devicePlatform = "web";
+      let deviceId = null;
       if (typeof window !== "undefined" && window.flutter_inappwebview) {
         platform = "mobile";
-        const handlerNames = ["getFcmToken", "getFCMToken", "getPushToken", "getFirebaseToken"];
-        for (const handlerName of handlerNames) {
+        const fcmHandlerNames = ["getFcmToken", "getFCMToken", "getPushToken", "getFirebaseToken"];
+        for (const handlerName of fcmHandlerNames) {
           try {
             const t = await Promise.race([
               window.flutter_inappwebview.callHandler(handlerName, { module: "delivery" }),
@@ -128,14 +131,60 @@ export const ProfileV2 = () => {
             console.warn(`Bridge handler ${handlerName} failed or timed out`, e);
           }
         }
+
+        const platformHandlerNames = ["getDevicePlatform", "getPlatform", "getNativePlatform"];
+        for (const handlerName of platformHandlerNames) {
+          try {
+            const value = await Promise.race([
+              window.flutter_inappwebview.callHandler(handlerName, { module: "delivery" }),
+              new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 1000))
+            ]);
+            const normalized = String(value || "").trim().toLowerCase();
+            if (["ios", "android", "web"].includes(normalized)) {
+              devicePlatform = normalized;
+              break;
+            }
+          } catch (e) {
+            console.warn(`Platform bridge handler ${handlerName} failed or timed out`, e);
+          }
+        }
+
+        if (devicePlatform === "ios") {
+          const voipHandlerNames = ["getVoipToken", "getVOIPToken", "getPushKitToken"];
+          for (const handlerName of voipHandlerNames) {
+            try {
+              const t = await Promise.race([
+                window.flutter_inappwebview.callHandler(handlerName, { module: "delivery" }),
+                new Promise((_, reject) => setTimeout(() => reject(new Error("Timeout")), 1500))
+              ]);
+              if (t && typeof t === "string" && t.length > 20) {
+                voipToken = t.trim();
+                break;
+              }
+            } catch (e) {
+              console.warn(`VoIP bridge handler ${handlerName} failed or timed out`, e);
+            }
+          }
+        }
+
         if (!fcmToken) {
           fcmToken = localStorage.getItem("fcm_web_registered_token_delivery") || null;
         }
       } else {
         fcmToken = localStorage.getItem("fcm_web_registered_token_delivery") || null;
       }
+
+      const tokenSeed = String(voipToken || fcmToken || "").trim().slice(-16);
+      deviceId = tokenSeed ? ["tuggo", "delivery", devicePlatform || "unknown", tokenSeed].join(":") : null;
       
-      // Add explicit call to removeFcmToken API before logout
+      if (deviceId || fcmToken || voipToken) {
+        try {
+          await deliveryAPI.removePushDevice({ deviceId, fcmToken, voipToken });
+        } catch (e) {
+          console.warn("Failed to remove push device directly", e);
+        }
+      }
+
       if (fcmToken) {
         try {
           await deliveryAPI.removeFcmToken(fcmToken, platform);

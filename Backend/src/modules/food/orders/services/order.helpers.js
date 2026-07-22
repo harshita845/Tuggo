@@ -4,6 +4,10 @@ import {
   sendNotificationToOwner,
   sendNotificationToOwners,
 } from "../../../../core/notifications/firebase.service.js";
+import {
+  sendUrgentOrderNotificationToOwner,
+  sendUrgentOrderNotificationsToOwners,
+} from "../../../../core/notifications/voip.service.js";
 import { getIO, rooms } from '../../../../config/socket.js';
 import { addOrderJob } from '../../../../queues/producers/order.producer.js';
 
@@ -88,6 +92,22 @@ export async function notifyOwnerSafely(target, payload) {
     await sendNotificationToOwner({ ...target, payload });
   } catch (error) {
     logger.warn(`FCM notification failed: ${error?.message || error}`);
+  }
+}
+
+export async function notifyOwnersUrgentlySafely(targets, payload) {
+  try {
+    await sendUrgentOrderNotificationsToOwners(targets, payload);
+  } catch (error) {
+    logger.warn(`Urgent notification failed: ${error?.message || error}`);
+  }
+}
+
+export async function notifyOwnerUrgentlySafely(target, payload) {
+  try {
+    await sendUrgentOrderNotificationToOwner({ ...target, payload });
+  } catch (error) {
+    logger.warn(`Urgent notification failed: ${error?.message || error}`);
   }
 }
 
@@ -264,11 +284,12 @@ export async function notifyRestaurantNewOrder(orderDoc) {
       io.to(rooms.restaurant(orderDoc.restaurantId)).emit("new_order", payload);
     }
 
-    await notifyOwnersSafely(
+    await notifyOwnersUrgentlySafely(
       [{ ownerType: "RESTAURANT", ownerId: orderDoc.restaurantId }],
       {
         title: "New order received",
         body: `Order #${orderDoc.order_id || orderDoc._id} is waiting for review.`,
+        sound: 'default',
         data: {
           type: "new_order",
           orderId: orderDoc._id.toString(),

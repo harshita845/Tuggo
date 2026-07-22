@@ -74,6 +74,37 @@ function sanitize(value) {
   return String(value || "").trim().replace(/^['"]|['"]$/g, "");
 }
 
+function inferDevicePlatform() {
+  if (typeof navigator === "undefined") return "unknown";
+  const agent = String(navigator.userAgent || navigator.vendor || "").toLowerCase();
+  if (/iphone|ipad|ipod|ios/.test(agent)) return "ios";
+  if (agent.includes("android")) return "android";
+  if (agent.includes("mac") || agent.includes("win") || agent.includes("linux")) return "web";
+  return "unknown";
+}
+
+async function getNativeDevicePlatform(moduleName) {
+  if (!isFlutterWebView()) return inferDevicePlatform();
+
+  const handlerNames = ["getDevicePlatform", "getPlatform", "getNativePlatform"];
+  for (const handlerName of handlerNames) {
+    try {
+      const value = await window.flutter_inappwebview.callHandler(handlerName, { module: moduleName });
+      const normalized = sanitize(value).toLowerCase();
+      if (["ios", "android", "web"].includes(normalized)) return normalized;
+    } catch {
+      // Try next handler.
+    }
+  }
+
+  return inferDevicePlatform();
+}
+
+function getDeviceId(moduleName, devicePlatform, fcmToken, voipToken) {
+  const tokenSeed = sanitize(voipToken || fcmToken).slice(-16);
+  return ["tuggo", moduleName, devicePlatform || "unknown", tokenSeed || "device"].join(":");
+}
+
 function getNotificationKey(payload = {}) {
   // Use unique identifiers from FCM if available
   const fcmId = payload?.messageId || payload?.data?.messageId || payload?.data?.notificationId;
@@ -487,32 +518,70 @@ async function saveTokenByModule(moduleName, token, platform = "web") {
   }
 }
 
-async function registerNativeWebViewFcmToken(moduleName) {
-  if (!isFlutterWebView()) return;
+async function savePushDeviceByModule(moduleName, payload = {}) {
+  if (moduleName === "restaurant") {
+    await restaurantAPI.savePushDevice(payload);
+    return;
+  }
+  if (moduleName === "delivery") {
+    await deliveryAPI.savePushDevice(payload);
+    return;
+  }
+  if (moduleName === "user") {
+    await userAPI.savePushDevice(payload);
+  }
+}
 
-  const handlerNames = ["getFcmToken", "getFCMToken", "getPushToken", "getFirebaseToken"];
+async function getNativeBridgeToken(handlerNames, moduleName) {
   for (const handlerName of handlerNames) {
     try {
       const token = await window.flutter_inappwebview.callHandler(handlerName, { module: moduleName });
       const normalizedToken = String(token || "").trim();
-      if (normalizedToken.length < 20) continue;
-
-      const lastSavedToken = getSavedToken(moduleName);
-      if (lastSavedToken !== normalizedToken) {
-        await saveTokenByModule(moduleName, normalizedToken, "mobile");
-        setSavedToken(moduleName, normalizedToken);
+      if (normalizedToken.length >= 20) {
+        return { handlerName, token: normalizedToken };
       }
-
-      pushDebugLog(PUSH_DEBUG_PREFIX, "Registered native WebView FCM token", {
-        moduleName,
-        handlerName,
-        tokenPreview: `${normalizedToken.slice(0, 12)}...`,
-      });
-      return;
     } catch {
       // Try next handler.
     }
   }
+  return { handlerName: "", token: "" };
+}
+
+async function registerNativeWebViewFcmToken(moduleName) {
+  if (!isFlutterWebView()) return;
+
+  const devicePlatform = await getNativeDevicePlatform(moduleName);
+  const fcmResult = await getNativeBridgeToken(["getFcmToken", "getFCMToken", "getPushToken", "getFirebaseToken"], moduleName);
+  const voipResult = devicePlatform === "ios"
+    ? await getNativeBridgeToken(["getVoipToken", "getVOIPToken", "getPushKitToken"], moduleName)
+    : { handlerName: "", token: "" };
+
+  const normalizedToken = fcmResult.token;
+  const normalizedVoipToken = voipResult.token;
+  if (!normalizedToken && !normalizedVoipToken) return;
+
+  const lastSavedToken = getSavedToken(moduleName);
+  if (lastSavedToken !== normalizedToken) {
+    setSavedToken(moduleName, normalizedToken);
+  }
+
+  await savePushDeviceByModule(moduleName, {
+    fcmToken: normalizedToken || undefined,
+    voipToken: normalizedVoipToken || undefined,
+    pushPlatform: "mobile",
+    devicePlatform,
+    appRole: moduleName,
+    deviceId: getDeviceId(moduleName, devicePlatform, normalizedToken, normalizedVoipToken),
+  });
+
+  pushDebugLog(PUSH_DEBUG_PREFIX, "Registered native WebView push device", {
+    moduleName,
+    devicePlatform,
+    fcmHandlerName: fcmResult.handlerName,
+    voipHandlerName: voipResult.handlerName,
+    tokenPreview: normalizedToken ? `${normalizedToken.slice(0, 12)}...` : "",
+    hasVoipToken: Boolean(normalizedVoipToken),
+  });
 }
 
 // options.fromSwRelay = true means the service worker already showed the system

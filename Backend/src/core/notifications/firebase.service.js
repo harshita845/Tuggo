@@ -235,6 +235,24 @@ const normalizeTokenList = (tokens = []) => {
     return normalized.slice(-10);
 };
 
+const normalizeDevicePlatform = (platform) => {
+    const normalized = sanitizeString(platform).toLowerCase();
+    if (["ios", "android", "web"].includes(normalized)) return normalized;
+    return 'unknown';
+};
+
+const normalizePushPlatform = (platform) => (platform === 'mobile' ? 'mobile' : 'web');
+
+const findPushDeviceIndex = (devices = [], { deviceId, fcmToken, voipToken, devicePlatform }) =>
+    devices.findIndex((device) => {
+        if (!device || typeof device !== 'object') return false;
+        if (deviceId && sanitizeString(device.deviceId) === deviceId) return true;
+        if (fcmToken && sanitizeString(device.fcmToken) === fcmToken) return true;
+        if (voipToken && sanitizeString(device.voipToken) === voipToken) return true;
+        if (devicePlatform === 'ios' && voipToken && sanitizeString(device.voipToken) === voipToken) return true;
+        return false;
+    });
+
 const readTokensFromDoc = (doc, platform) => {
     if (!doc) return [];
     if (platform) {
@@ -252,6 +270,78 @@ export const listOwnerTokens = async ({ ownerType, ownerId, platform }) => {
     if (!model) return [];
     const doc = await model.findById(ownerId).select('fcmTokens fcmTokenMobile').lean();
     return readTokensFromDoc(doc, platform);
+};
+
+export const listOwnerPushDevices = async ({ ownerType, ownerId } = {}) => {
+    if (!ownerType || !ownerId) return [];
+    const model = getOwnerModel(ownerType);
+    if (!model) return [];
+    const doc = await model.findById(ownerId).select('pushDevices').lean();
+    return Array.isArray(doc?.pushDevices) ? doc.pushDevices : [];
+};
+
+export const upsertOwnerPushDevice = async ({
+    ownerType,
+    ownerId,
+    fcmToken,
+    voipToken,
+    pushPlatform = 'mobile',
+    devicePlatform = 'unknown',
+    appRole = '',
+    deviceId = '',
+} = {}) => {
+    const normalizedFcmToken = sanitizeString(fcmToken);
+    const normalizedVoipToken = sanitizeString(voipToken);
+    const normalizedDeviceId = sanitizeString(deviceId);
+    const normalizedPushPlatform = normalizePushPlatform(pushPlatform);
+    const normalizedDevicePlatform = normalizeDevicePlatform(devicePlatform);
+
+    if (!ownerType || !ownerId || (!normalizedFcmToken && !normalizedVoipToken)) {
+        throw new Error('ownerType, ownerId and at least one push token are required.');
+    }
+
+    const model = getOwnerModel(ownerType);
+    if (!model) {
+        throw new Error(`Unsupported owner type: ${ownerType}`);
+    }
+
+    const doc = await model.findById(ownerId);
+    if (!doc) {
+        throw new Error('Owner profile not found.');
+    }
+
+    const pushDevices = Array.isArray(doc.pushDevices) ? [...doc.pushDevices] : [];
+    const index = findPushDeviceIndex(pushDevices, {
+        deviceId: normalizedDeviceId,
+        fcmToken: normalizedFcmToken,
+        voipToken: normalizedVoipToken,
+        devicePlatform: normalizedDevicePlatform,
+    });
+
+    const nextDevice = {
+        ...(index >= 0 && pushDevices[index] ? pushDevices[index].toObject?.() || pushDevices[index] : {}),
+        ...(normalizedFcmToken ? { fcmToken: normalizedFcmToken } : {}),
+        ...(normalizedVoipToken ? { voipToken: normalizedVoipToken } : {}),
+        pushPlatform: normalizedPushPlatform,
+        devicePlatform: normalizedDevicePlatform,
+        appRole: sanitizeString(appRole || ownerType).toLowerCase(),
+        ...(normalizedDeviceId ? { deviceId: normalizedDeviceId } : {}),
+        lastSeenAt: new Date(),
+    };
+
+    if (index >= 0) pushDevices[index] = nextDevice;
+    else pushDevices.push(nextDevice);
+
+    doc.pushDevices = pushDevices;
+
+    if (normalizedFcmToken) {
+        const field = getTokenFieldForPlatform(normalizedPushPlatform);
+        const existingTokens = Array.isArray(doc[field]) ? doc[field] : [];
+        doc[field] = normalizeTokenList([...existingTokens, normalizedFcmToken]);
+    }
+
+    await doc.save();
+    return { success: true, data: nextDevice };
 };
 
 export const upsertFirebaseDeviceToken = async ({ ownerType, ownerId, token, platform = 'web' }) => {
@@ -310,6 +400,45 @@ export const removeFirebaseDeviceToken = async ({ ownerType, ownerId, token, pla
         doc.fcmTokenMobile = normalizeTokenList(
             (Array.isArray(doc.fcmTokenMobile) ? doc.fcmTokenMobile : []).filter((t) => t !== normalizedToken)
         );
+    }
+
+    if (Array.isArray(doc.pushDevices) && doc.pushDevices.length > 0) {
+        doc.pushDevices = doc.pushDevices.filter((device) => {
+            const deviceFcm = sanitizeString(device?.fcmToken);
+            const deviceVoip = sanitizeString(device?.voipToken);
+            return deviceFcm !== normalizedToken && deviceVoip !== normalizedToken;
+        });
+    }
+
+    await doc.save();
+    return { success: true };
+};
+
+export const removeOwnerPushDevice = async ({ ownerType, ownerId, fcmToken, voipToken, deviceId } = {}) => {
+    const normalizedFcmToken = sanitizeString(fcmToken);
+    const normalizedVoipToken = sanitizeString(voipToken);
+    const normalizedDeviceId = sanitizeString(deviceId);
+    if (!ownerType || !ownerId || (!normalizedFcmToken && !normalizedVoipToken && !normalizedDeviceId)) {
+        throw new Error('ownerType, ownerId and a token or deviceId are required.');
+    }
+
+    const model = getOwnerModel(ownerType);
+    if (!model) throw new Error(`Unsupported owner type: ${ownerType}`);
+    const doc = await model.findById(ownerId);
+    if (!doc) return { success: false };
+
+    if (Array.isArray(doc.pushDevices) && doc.pushDevices.length > 0) {
+        doc.pushDevices = doc.pushDevices.filter((device) => {
+            const matchesDeviceId = normalizedDeviceId && sanitizeString(device?.deviceId) === normalizedDeviceId;
+            const matchesFcm = normalizedFcmToken && sanitizeString(device?.fcmToken) === normalizedFcmToken;
+            const matchesVoip = normalizedVoipToken && sanitizeString(device?.voipToken) === normalizedVoipToken;
+            return !(matchesDeviceId || matchesFcm || matchesVoip);
+        });
+    }
+
+    if (normalizedFcmToken) {
+        doc.fcmTokens = normalizeTokenList((Array.isArray(doc.fcmTokens) ? doc.fcmTokens : []).filter((t) => t !== normalizedFcmToken));
+        doc.fcmTokenMobile = normalizeTokenList((Array.isArray(doc.fcmTokenMobile) ? doc.fcmTokenMobile : []).filter((t) => t !== normalizedFcmToken));
     }
 
     await doc.save();

@@ -94,6 +94,18 @@ const userSchema = new mongoose.Schema(
             type: [String],
             default: []
         },
+        pushDevices: {
+            type: [{
+                fcmToken: { type: String, trim: true },
+                voipToken: { type: String, trim: true },
+                pushPlatform: { type: String, enum: ["web", "mobile"], default: "mobile" },
+                devicePlatform: { type: String, enum: ["ios", "android", "web", "unknown"], default: "unknown" },
+                appRole: { type: String, trim: true },
+                deviceId: { type: String, trim: true },
+                lastSeenAt: { type: Date, default: Date.now }
+            }],
+            default: []
+        },
         dateOfBirth: {
             type: Date,
             default: null

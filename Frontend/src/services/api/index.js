@@ -132,6 +132,24 @@ const saveUserFcmTokenOnce = createSaveFcmTokenOnce(userClient);
 const saveRestaurantFcmTokenOnce = createSaveFcmTokenOnce(restaurantClient);
 const saveDeliveryFcmTokenOnce = createSaveFcmTokenOnce(deliveryClient);
 
+function createSavePushDevice(client) {
+  return (payload = {}) => client.post("/fcm-tokens/device/save", payload ?? {});
+}
+
+function createRemovePushDevice(client) {
+  return (payload = {}) => client.delete("/fcm-tokens/device/remove", {
+    data: payload ?? {},
+    params: payload ?? {},
+  });
+}
+
+const saveUserPushDevice = createSavePushDevice(userClient);
+const saveRestaurantPushDevice = createSavePushDevice(restaurantClient);
+const saveDeliveryPushDevice = createSavePushDevice(deliveryClient);
+const removeUserPushDevice = createRemovePushDevice(userClient);
+const removeRestaurantPushDevice = createRemovePushDevice(restaurantClient);
+const removeDeliveryPushDevice = createRemovePushDevice(deliveryClient);
+
 /** Auth API - user OTP + admin login via new backend */
 export const authAPI = {
   sendOTP: (phone, _purpose = "login", _email = null) => {
@@ -878,6 +896,8 @@ export const restaurantAPI = {
   updateMenu: (body) =>
     restaurantClient.patch("/food/restaurant/menu", body ?? {}),
   saveFcmToken: saveRestaurantFcmTokenOnce,
+  savePushDevice: (payload = {}) => saveRestaurantPushDevice(payload),
+  removePushDevice: (payload = {}) => removeRestaurantPushDevice(payload),
   removeFcmToken: (token, platform = "web") => {
     if (!token) return Promise.reject(new Error("FCM token is required"));
     return restaurantClient.delete(
@@ -1479,6 +1499,8 @@ export const deliveryAPI = {
     return deliveryClient.patch("/food/delivery/profile/bank-details", formData);
   },
   saveFcmToken: saveDeliveryFcmTokenOnce,
+  savePushDevice: (payload = {}) => saveDeliveryPushDevice(payload),
+  removePushDevice: (payload = {}) => removeDeliveryPushDevice(payload),
   removeFcmToken: (token, platform = "web") => {
     if (!token) return Promise.reject(new Error("FCM token is required"));
     return deliveryClient.delete(
@@ -1873,6 +1895,8 @@ export const userAPI = {
     const platform = options?.platform === "mobile" ? "mobile" : "web";
     return saveUserFcmTokenOnce(token, platform);
   },
+  savePushDevice: (payload = {}) => saveUserPushDevice(payload),
+  removePushDevice: (payload = {}) => removeUserPushDevice(payload),
   removeFcmToken: (token, options = {}) => {
     if (!token) return Promise.reject(new Error("FCM token is required"));
     const platform = options?.platform === "mobile" ? "mobile" : "web";
