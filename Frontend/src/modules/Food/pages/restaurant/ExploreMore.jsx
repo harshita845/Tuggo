@@ -669,6 +669,7 @@ export default function ExploreMore() {
     }
   }
 
+
   const handleTestNotification = async (channel = "fcm") => {
     if (activeTestNotification) return
     setActiveTestNotification(channel)
@@ -677,16 +678,49 @@ export default function ExploreMore() {
       if (typeof window !== "undefined" && window.flutter_inappwebview) {
         platform = "mobile"
       }
+
+      console.info("[RestaurantVoIPTest] click", {
+        channel,
+        platform,
+        path: typeof window !== "undefined" ? window.location.pathname : "unknown",
+        ts: new Date().toISOString(),
+      })
+
       const response = await notificationAPI.sendTestNotification(platform, channel, { contextModule: "restaurant" })
       const voipResult = response?.data?.data?.voip
 
+      console.info("[RestaurantVoIPTest] response", {
+        channel,
+        platform,
+        status: response?.status,
+        data: response?.data,
+        voipResult,
+      })
+
       if (channel === "voip" && voipResult?.skipped) {
+        console.warn("[RestaurantVoIPTest] skipped", voipResult)
         toast.error(voipResult.reason || "No VoIP token registered on this device")
         return
       }
 
+      if (channel === "voip") {
+        if (voipResult?.failureCount > 0) {
+          console.warn("[RestaurantVoIPTest] voip failed", voipResult)
+          toast.error(voipResult?.results?.[0]?.error || "VoIP send failed")
+          return
+        }
+        console.info("[RestaurantVoIPTest] voip success", voipResult)
+      }
+
       toast.success(channel === "voip" ? "Test VOIP sent! Check your iPhone." : "Test notification sent! Check your device.")
     } catch (err) {
+      console.error("[RestaurantVoIPTest] error", {
+        channel,
+        platform: typeof window !== "undefined" && window.flutter_inappwebview ? "mobile" : "web",
+        status: err?.response?.status,
+        data: err?.response?.data,
+        message: err?.message,
+      })
       toast.error(err?.response?.data?.message || (channel === "voip" ? "Failed to send test VOIP" : "Failed to send test notification"))
     } finally {
       setActiveTestNotification("")

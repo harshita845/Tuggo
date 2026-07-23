@@ -290,12 +290,24 @@ router.post('/test', authMiddleware, async (req, res, next) => {
 
 router.post('/test-voip', authMiddleware, async (req, res, next) => {
     try {
+        const ownerType = req.user?.role;
+        const ownerId = req.user?.userId;
         const voipToken = String(req.body?.voipToken || '').trim();
         const title = String(req.body?.title || 'Test VoIP Call').trim();
         const body = String(req.body?.body || 'This is a direct VoIP test from Tuggo.').trim();
         const link = String(req.body?.link || '/').trim();
 
+        console.info('[VoIPTest] request', {
+            ownerType,
+            ownerId,
+            hasToken: Boolean(voipToken),
+            tokenPreview: voipToken ? `${voipToken.slice(0, 8)}...${voipToken.slice(-6)}` : 'none', 
+            title,
+            link,
+        });
+
         if (!voipToken) {
+            console.warn('[VoIPTest] missing voipToken');
             return sendError(res, 400, 'voipToken is required');
         }
 
@@ -316,12 +328,19 @@ router.post('/test-voip', authMiddleware, async (req, res, next) => {
             { ownerType: 'RESTAURANT' }
         );
 
+        console.info('[VoIPTest] result', {
+            successCount: result?.successCount || 0,
+            failureCount: result?.failureCount || 0,
+            firstError: result?.results?.[0]?.error || null,
+        });
+
         return res.status(200).json({
             success: true,
             message: 'Direct test VoIP notification sent',
             data: { voip: result }
         });
     } catch (error) {
+        console.error('[VoIPTest] error', error?.message || error, error);
         next(error);
     }
 });
