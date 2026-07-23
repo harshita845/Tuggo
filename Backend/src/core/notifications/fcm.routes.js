@@ -270,15 +270,16 @@ router.post('/test', authMiddleware, async (req, res, next) => {
     try {
         const { ownerType, ownerId } = getOwnerContext(req);
         const platform = req.body?.platform === 'mobile' ? 'mobile' : req.body?.platform === 'web' ? 'web' : undefined;
+        const channel = req.body?.channel === 'voip' ? 'voip' : 'fcm';
 
         if (!ownerType || !ownerId) {
             return sendError(res, 401, 'Authentication required');
         }
 
-        const result = await sendTestNotification({ ownerType, ownerId, platform });
+        const result = await sendTestNotification({ ownerType, ownerId, platform, channel });
         return res.status(200).json({
             success: true,
-            message: 'Test notification sent',
+            message: channel === 'voip' ? 'Test VoIP notification sent' : 'Test notification sent',
             data: result
         });
     } catch (error) {
@@ -287,5 +288,6 @@ router.post('/test', authMiddleware, async (req, res, next) => {
 });
 
 export default router;
+
 
 

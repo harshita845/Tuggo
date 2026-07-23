@@ -253,6 +253,26 @@ export const sendVoipPushNotification = async (tokens, payload = {}, options = {
     return { successCount, failureCount, results };
 };
 
+export const sendVoipNotificationToOwner = async ({ ownerType, ownerId, payload } = {}) => {
+    const { iosVoipTokens } = await listOwnerUrgentPushTargets({ ownerType, ownerId });
+
+    if (!iosVoipTokens.length) {
+        return {
+            voip: {
+                successCount: 0,
+                failureCount: 0,
+                results: [],
+                skipped: true,
+                reason: 'No iOS VoIP tokens registered for this account.',
+            },
+        };
+    }
+
+    return {
+        voip: await sendVoipPushNotification(iosVoipTokens, payload, { ownerType }),
+    };
+};
+
 export const sendUrgentOrderNotificationToOwner = async ({ ownerType, ownerId, payload } = {}) => {
     const { iosVoipTokens, fcmTokens } = await listOwnerUrgentPushTargets({ ownerType, ownerId });
     const responses = {
@@ -287,4 +307,5 @@ export const sendUrgentOrderNotificationsToOwners = async (targets = [], payload
     }
     return results;
 };
+
 

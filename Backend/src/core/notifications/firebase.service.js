@@ -7,6 +7,7 @@ import { FoodDeliveryPartner } from '../../modules/food/delivery/models/delivery
 import { FoodAdmin } from '../admin/admin.model.js';
 import { config } from '../../config/env.js';
 import { logger } from '../../utils/logger.js';
+import { sendVoipNotificationToOwner } from './voip.service.js';
 
 const FIREBASE_MESSAGING_SCOPE = 'https://www.googleapis.com/auth/firebase.messaging';
 const OAUTH_TOKEN_URL = 'https://oauth2.googleapis.com/token';
@@ -587,7 +588,28 @@ export const notifyAdminsSafely = async (payload = {}) => {
     }
 };
 
-export const sendTestNotification = async ({ ownerType, ownerId, platform }) => {
+export const sendTestNotification = async ({ ownerType, ownerId, platform, channel = 'fcm' }) => {
+    const normalizedChannel = String(channel || 'fcm').trim().toLowerCase();
+
+    if (normalizedChannel === 'voip') {
+        return sendVoipNotificationToOwner({
+            ownerType,
+            ownerId,
+            payload: {
+                title: 'Test VoIP Call',
+                body: 'This is a test VoIP ring from the restaurant app',
+                sound: 'default',
+                type: 'voip_ring',
+                data: {
+                    type: 'voip_ring',
+                    link: '/',
+                    test: 'true',
+                    source: 'restaurant_app',
+                },
+            },
+        });
+    }
+
     return sendNotificationToOwner({
         ownerType,
         ownerId,
@@ -619,6 +641,7 @@ export const notifyOwnersSafely = async (targets = [], payload = {}) => {
         return [];
     }
 };
+
 
 
 

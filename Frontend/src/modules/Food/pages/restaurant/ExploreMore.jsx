@@ -358,7 +358,7 @@ export default function ExploreMore() {
   const [existingSchedule, setExistingSchedule] = useState(null)
   const [deleteAccountConfirmOpen, setDeleteAccountConfirmOpen] = useState(false)
   const [isDeletingAccount, setIsDeletingAccount] = useState(false)
-  const [isTestingNotification, setIsTestingNotification] = useState(false)
+  const [activeTestNotification, setActiveTestNotification] = useState("")
 
   useEffect(() => {
     // Register for push notifications on mount for this module
@@ -669,20 +669,27 @@ export default function ExploreMore() {
     }
   }
 
-  const handleTestNotification = async () => {
-    if (isTestingNotification) return
-    setIsTestingNotification(true)
+  const handleTestNotification = async (channel = "fcm") => {
+    if (activeTestNotification) return
+    setActiveTestNotification(channel)
     try {
       let platform = "web"
       if (typeof window !== "undefined" && window.flutter_inappwebview) {
         platform = "mobile"
       }
-      await notificationAPI.sendTestNotification(platform, { contextModule: "restaurant" })
-      toast.success("Test notification sent! Check your device.")
+      const response = await notificationAPI.sendTestNotification(platform, channel, { contextModule: "restaurant" })
+      const voipResult = response?.data?.data?.voip
+
+      if (channel === "voip" && voipResult?.skipped) {
+        toast.error(voipResult.reason || "No VoIP token registered on this device")
+        return
+      }
+
+      toast.success(channel === "voip" ? "Test VOIP sent! Check your iPhone." : "Test notification sent! Check your device.")
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Failed to send test notification")
+      toast.error(err?.response?.data?.message || (channel === "voip" ? "Failed to send test VOIP" : "Failed to send test notification"))
     } finally {
-      setIsTestingNotification(false)
+      setActiveTestNotification("")
     }
   }
 
@@ -1364,20 +1371,34 @@ export default function ExploreMore() {
                 </button>
               </div>
 
-              {/* Test Notification (Debug) */}
-              <div className="px-6 pb-4">
+              {/* Test Notifications (Debug) */}
+              <div className="px-6 pb-4 space-y-3">
                 <button
-                  onClick={handleTestNotification}
-                  disabled={isTestingNotification}
+                  onClick={() => handleTestNotification("fcm")}
+                  disabled={Boolean(activeTestNotification)}
                   className="w-full bg-blue-50 text-blue-600 border border-blue-100 hover:bg-blue-100/50 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed font-bold py-4 px-4 rounded-2xl transition-all flex items-center justify-between group"
                 >
                   <div className="flex items-center gap-3">
                     <div className="bg-white p-2 rounded-xl shadow-sm">
-                      <Bell className={`w-5 h-5 text-blue-500 ${isTestingNotification ? "animate-pulse" : ""}`} />
+                      <Bell className={`w-5 h-5 text-blue-500 ${activeTestNotification === "fcm" ? "animate-pulse" : ""}`} />
                     </div>
-                    <span className="text-base font-bold">{isTestingNotification ? "Sending test..." : "Test Notification"}</span>
+                    <span className="text-base font-bold">{activeTestNotification === "fcm" ? "Sending FCM..." : "Test FCM Notification"}</span>
                   </div>
                   <ChevronRight className="w-5 h-5 text-blue-300 group-hover:text-blue-500 transition-colors" />
+                </button>
+
+                <button
+                  onClick={() => handleTestNotification("voip")}
+                  disabled={Boolean(activeTestNotification)}
+                  className="w-full bg-emerald-50 text-emerald-600 border border-emerald-100 hover:bg-emerald-100/50 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed font-bold py-4 px-4 rounded-2xl transition-all flex items-center justify-between group"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="bg-white p-2 rounded-xl shadow-sm">
+                      <Bell className={`w-5 h-5 text-emerald-500 ${activeTestNotification === "voip" ? "animate-pulse" : ""}`} />
+                    </div>
+                    <span className="text-base font-bold">{activeTestNotification === "voip" ? "Sending VOIP..." : "Test VOIP Call"}</span>
+                  </div>
+                  <ChevronRight className="w-5 h-5 text-emerald-300 group-hover:text-emerald-500 transition-colors" />
                 </button>
               </div>
 
@@ -1789,4 +1810,5 @@ export default function ExploreMore() {
     </motion.div>
   )
 }
+
 

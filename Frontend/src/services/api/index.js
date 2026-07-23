@@ -215,8 +215,8 @@ export const notificationAPI = {
     apiClient.delete(`/food/notifications/${String(id)}`, config),
   dismissAll: (config = {}) =>
     apiClient.delete("/food/notifications/inbox/all", config),
-  sendTestNotification: (platform = "web", config = {}) =>
-    apiClient.post("/fcm-tokens/test", { platform }, config),
+  sendTestNotification: (platform = "web", channel = "fcm", config = {}) =>
+    apiClient.post("/fcm-tokens/test", { platform, channel }, config),
 };
 
 /** Admin API - new backend only (GET /auth/me, PATCH /auth/admin/profile, POST /auth/admin/change-password) */
@@ -2141,5 +2141,6 @@ export const publicAPI = {
   getTerms: (key = "terms") => userClient.get(`/food/pages/${key}`),
   getBusinessSettings: () => apiClient.get("/food/admin/business-settings/public"),
 };
+
 
 
