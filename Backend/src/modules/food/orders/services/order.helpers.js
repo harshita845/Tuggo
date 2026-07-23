@@ -7,6 +7,7 @@ import {
 import {
   sendUrgentOrderNotificationToOwner,
   sendUrgentOrderNotificationsToOwners,
+  listOwnerUrgentPushTargets,
 } from "../../../../core/notifications/voip.service.js";
 import { getIO, rooms } from '../../../../config/socket.js';
 import { addOrderJob } from '../../../../queues/producers/order.producer.js';
@@ -282,6 +283,13 @@ export async function notifyRestaurantNewOrder(orderDoc) {
         `[RestaurantOrders] Emitting new_order to ${rooms.restaurant(orderDoc.restaurantId)} for order ${orderDoc._id?.toString?.() || ''}`,
       );
       io.to(rooms.restaurant(orderDoc.restaurantId)).emit("new_order", payload);
+    }
+
+    const pushTargets = await listOwnerUrgentPushTargets({ ownerType: "RESTAURANT", ownerId: orderDoc.restaurantId });
+    if (String(process.env.PUSH_DEBUG || "").toLowerCase() === "true") {
+      logger.info(
+        `[PushDebug][RestaurantOrder] order=${orderDoc._id?.toString?.() || ""} restaurant=${orderDoc.restaurantId?.toString?.() || ""} voip=${pushTargets.iosVoipTokens?.length || 0} fcm=${pushTargets.fcmTokens?.length || 0} voipPreview=${pushTargets.iosVoipTokens?.[0] ? `${String(pushTargets.iosVoipTokens[0]).slice(0, 8)}...` : "none"} fcmPreview=${pushTargets.fcmTokens?.[0] ? `${String(pushTargets.fcmTokens[0]).slice(0, 8)}...` : "none"}`
+      );
     }
 
     await notifyOwnersUrgentlySafely(

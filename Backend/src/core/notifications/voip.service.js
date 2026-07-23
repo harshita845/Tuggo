@@ -169,7 +169,6 @@ export const listOwnerUrgentPushTargets = async ({ ownerType, ownerId } = {}) =>
     const structuredFcmTokens = normalizeTokenList(
         pushDevices
             .filter((device) => device?.fcmToken)
-            .filter((device) => !(device?.devicePlatform === 'ios' && device?.pushPlatform === 'mobile' && device?.voipToken))
             .map((device) => device?.fcmToken)
     );
 
