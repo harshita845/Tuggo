@@ -6,6 +6,7 @@ import {
     removeFirebaseDeviceToken,
     removeOwnerPushDevice,
     sendTestNotification,
+    sendVoipPushNotification,
     upsertFirebaseDeviceToken,
     upsertOwnerPushDevice
 } from './firebase.service.js';
@@ -281,6 +282,44 @@ router.post('/test', authMiddleware, async (req, res, next) => {
             success: true,
             message: channel === 'voip' ? 'Test VoIP notification sent' : 'Test notification sent',
             data: result
+        });
+    } catch (error) {
+        next(error);
+    }
+});
+
+router.post('/test-voip', authMiddleware, async (req, res, next) => {
+    try {
+        const voipToken = String(req.body?.voipToken || '').trim();
+        const title = String(req.body?.title || 'Test VoIP Call').trim();
+        const body = String(req.body?.body || 'This is a direct VoIP test from Tuggo.').trim();
+        const link = String(req.body?.link || '/').trim();
+
+        if (!voipToken) {
+            return sendError(res, 400, 'voipToken is required');
+        }
+
+        const result = await sendVoipPushNotification(
+            [voipToken],
+            {
+                title,
+                body,
+                sound: 'default',
+                type: 'voip_ring',
+                data: {
+                    type: 'voip_ring',
+                    link,
+                    test: 'true',
+                    source: 'direct_voip_test',
+                },
+            },
+            { ownerType: 'RESTAURANT' }
+        );
+
+        return res.status(200).json({
+            success: true,
+            message: 'Direct test VoIP notification sent',
+            data: { voip: result }
         });
     } catch (error) {
         next(error);
