@@ -7,6 +7,7 @@ import {
 import {
   sendUrgentOrderNotificationToOwner,
   sendUrgentOrderNotificationsToOwners,
+  sendVoipNotificationToOwner,
   listOwnerUrgentPushTargets,
 } from "../../../../core/notifications/voip.service.js";
 import { getIO, rooms } from '../../../../config/socket.js';
@@ -109,6 +110,14 @@ export async function notifyOwnerUrgentlySafely(target, payload) {
     await sendUrgentOrderNotificationToOwner({ ...target, payload });
   } catch (error) {
     logger.warn(`Urgent notification failed: ${error?.message || error}`);
+  }
+}
+
+export async function notifyOwnerVoipOnlySafely(target, payload) {
+  try {
+    await sendVoipNotificationToOwner({ ...target, payload });
+  } catch (error) {
+    logger.warn(`VoIP notification failed: ${error?.message || error}`);
   }
 }
 
@@ -292,12 +301,12 @@ export async function notifyRestaurantNewOrder(orderDoc) {
       );
     }
 
-    await notifyOwnersUrgentlySafely(
-      [{ ownerType: "RESTAURANT", ownerId: orderDoc.restaurantId }],
+    await notifyOwnerVoipOnlySafely(
+      { ownerType: "RESTAURANT", ownerId: orderDoc.restaurantId },
       {
         title: "New order received",
         body: `Order #${orderDoc.order_id || orderDoc._id} is waiting for review.`,
-        sound: 'default',
+        sound: "default",
         data: {
           type: "new_order",
           orderId: orderDoc._id.toString(),
