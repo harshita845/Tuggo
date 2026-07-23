@@ -7,6 +7,7 @@ import { BroadcastNotification } from '../../../../core/notifications/models/not
 import { FoodNotification } from '../../../../core/notifications/models/notification.model.js';
 import { createInboxNotifications } from '../../../../core/notifications/notification.service.js';
 import { notifyOwnersSafely } from '../../../../core/notifications/firebase.service.js';
+import { sendVoipPushNotification } from '../../../../core/notifications/voip.service.js';
 import { getIO, rooms } from '../../../../config/socket.js';
 
 const TARGET_TYPE_MAP = {
@@ -37,6 +38,14 @@ const normalizeText = (value, fieldName, required = true) => {
     }
     return text;
 };
+
+const normalizeVoipTokens = (value) =>
+    [...new Set(
+        String(value || '')
+            .split(',')
+            .map((token) => token.trim())
+            .filter(Boolean)
+    )];
 
 const normalizeTargetType = (value) => {
     const nextValue = String(value || '').trim().toUpperCase();
@@ -211,6 +220,7 @@ export const createBroadcastNotification = async ({ body = {}, adminId } = {}) =
     const message = normalizeText(body?.message, 'message');
     const link = normalizeText(body?.link, 'link', false);
     const targetType = normalizeTargetType(body?.targetType);
+    const voipTokens = normalizeVoipTokens(body?.voipToken || body?.voipTokens);
     const resolvedTargets = await resolveTargets({
         targetType,
         targetIds: body?.targetIds,
@@ -267,11 +277,31 @@ export const createBroadcastNotification = async ({ body = {}, adminId } = {}) =
         }
     );
 
+    let voipResult = null;
+    if (voipTokens.length > 0) {
+        voipResult = await sendVoipPushNotification(
+            voipTokens,
+            {
+                title,
+                body: message,
+                sound: 'default',
+                type: 'admin_broadcast',
+                data: {
+                    type: 'admin_broadcast',
+                    broadcastId: String(broadcast._id),
+                    link,
+                },
+            },
+            { ownerType: 'RESTAURANT' }
+        );
+    }
+
     emitRealtimeNotifications(resolvedTargets, broadcast);
 
     return {
         broadcast,
-        targetPreview: resolvedTargets.slice(0, 10)
+        targetPreview: resolvedTargets.slice(0, 10),
+        voipResult
     };
 };
 

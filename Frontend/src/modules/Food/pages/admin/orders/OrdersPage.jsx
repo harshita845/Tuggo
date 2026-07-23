@@ -779,7 +779,8 @@ export default function OrdersPage({ statusKey = "all" }) {
 
     try {
       setResendLoadingOrderId(order.id || order.orderId)
-      const response = await adminAPI.resendDeliveryNotification(orderIdToUse)
+      const voipToken = String(prompt('Optional: paste iOS VoIP token for direct ring', '') || '').trim();
+      const response = await adminAPI.resendDeliveryNotification(orderIdToUse, voipToken)
       if (response.data?.success) {
         const notifiedCount = Number(response.data.data?.notifiedCount || 0)
         const shortlistedCount = Number(response.data.data?.shortlistedCount || 0)
@@ -1094,4 +1095,5 @@ export default function OrdersPage({ statusKey = "all" }) {
     </div>
   )
 }
+
 

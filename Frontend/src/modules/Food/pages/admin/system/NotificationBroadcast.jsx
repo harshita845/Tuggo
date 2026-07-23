@@ -48,6 +48,7 @@ export default function NotificationBroadcast() {
     title: "",
     message: "",
     targetType: "ALL",
+    voipToken: "",
   });
   const [history, setHistory] = useState([]);
   const [historyLoading, setHistoryLoading] = useState(true);
@@ -160,6 +161,7 @@ export default function NotificationBroadcast() {
         title: form.title.trim(),
         message: form.message.trim(),
         targetType: form.targetType,
+        voipToken: form.voipToken.trim(),
         targetIds:
           form.targetType === "CUSTOM"
             ? selectedRecipients.map((item) => item.ownerId)
@@ -174,7 +176,7 @@ export default function NotificationBroadcast() {
               }))
             : [],
       });
-      setForm({ title: "", message: "", targetType: "ALL" });
+      setForm({ title: "", message: "", targetType: "ALL", voipToken: "" });
       setSelectedRecipients([]);
       setSearch("");
       window.dispatchEvent(new Event("adminBroadcastUpdated"));
@@ -247,6 +249,19 @@ export default function NotificationBroadcast() {
                   rows={4}
                   className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-y"
                 />
+              </label>
+
+              <label className="block">
+                <span className="text-xs font-semibold text-slate-700">iOS VoIP Token</span>
+                <input
+                  value={form.voipToken}
+                  onChange={(event) => setForm((prev) => ({ ...prev, voipToken: event.target.value }))}
+                  placeholder="Paste one or more VoIP tokens, comma separated"
+                  className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+                />
+                <p className="mt-1 text-[10px] text-slate-500">
+                  Optional. Use this to ring a specific iPhone device directly.
+                </p>
               </label>
 
               {form.targetType === "CUSTOM" && (

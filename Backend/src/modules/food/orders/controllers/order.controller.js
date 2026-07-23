@@ -405,7 +405,8 @@ export async function resendDeliveryNotificationRestaurantController(req, res, n
     try {
         const restaurantId = req.user?.userId;
         const orderId = req.params.orderId;
-        const result = await orderService.resendDeliveryNotificationRestaurant(orderId, restaurantId);
+        const voipToken = String(req.body?.voipToken || '').trim();
+        const result = await orderService.resendDeliveryNotificationRestaurant(orderId, restaurantId, { voipToken });
         return sendResponse(res, 200, 'Notification resent successfully', result);
     } catch (err) {
         next(err);
@@ -415,9 +416,11 @@ export async function resendDeliveryNotificationRestaurantController(req, res, n
 export async function resendDeliveryNotificationAdminController(req, res, next) {
     try {
         const orderId = req.params.orderId;
-        const result = await orderService.resendDeliveryNotificationAdmin(orderId);
+        const voipToken = String(req.body?.voipToken || '').trim();
+        const result = await orderService.resendDeliveryNotificationAdmin(orderId, { voipToken });
         return sendResponse(res, 200, 'Notification resent successfully', result);
     } catch (err) {
         next(err);
     }
 }
+

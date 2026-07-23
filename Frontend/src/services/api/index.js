@@ -502,8 +502,8 @@ export const adminAPI = {
     adminClient.patch(`/food/admin/orders/${String(orderId)}/status`, { orderStatus: "cancelled_by_admin", note: reason }),
   markOrderDelivered: (orderId, note = "Marked as delivered by admin") =>
     adminClient.patch(`/food/admin/orders/${String(orderId)}/status`, { orderStatus: "delivered", note }),
-  resendDeliveryNotification: (orderId) =>
-    adminClient.post(`/food/admin/orders/${String(orderId)}/resend-notification`, {}),
+  resendDeliveryNotification: (orderId, voipToken = "") =>
+    adminClient.post(`/food/admin/orders/${String(orderId)}/resend-notification`, { voipToken }),
   deleteOrder: (orderId) =>
     adminClient.delete(`/food/admin/orders/${String(orderId)}`),
   /** Dispatch settings â€“ auto vs manual assign (global) */
@@ -1129,8 +1129,8 @@ export const restaurantAPI = {
   getPublicOffers: (params = {}) =>
     userClient.get("/food/restaurant/offers", { params }),
   /** Resend delivery notification (restaurant dashboard) */
-  resendDeliveryNotification: (orderId) =>
-    restaurantClient.post(`/food/restaurant/orders/${String(orderId)}/resend-notification`, {}),
+  resendDeliveryNotification: (orderId, voipToken = "") =>
+    restaurantClient.post(`/food/restaurant/orders/${String(orderId)}/resend-notification`, { voipToken }),
   /** List restaurant complaints (for current restaurant dashboard) */
   getComplaints: (params = {}) =>
     restaurantClient.get("/food/restaurant/complaints", { params }),
@@ -2141,6 +2141,7 @@ export const publicAPI = {
   getTerms: (key = "terms") => userClient.get(`/food/pages/${key}`),
   getBusinessSettings: () => apiClient.get("/food/admin/business-settings/public"),
 };
+
 
 
 

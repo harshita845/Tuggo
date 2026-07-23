@@ -8,6 +8,7 @@ import { FoodFeeSettings } from '../../admin/models/feeSettings.model.js';
 import { FoodZone } from '../../admin/models/zone.model.js';
 import { ValidationError, NotFoundError } from '../../../../core/auth/errors.js';
 import { logger } from '../../../../utils/logger.js';
+import { sendVoipPushNotification } from '../../../../core/notifications/voip.service.js';
 import { config } from '../../../../config/env.js';
 import { getIO, rooms } from '../../../../config/socket.js';
 import { addOrderJob, cancelDispatchTimeoutJob } from '../../../../queues/producers/order.producer.js';
@@ -418,6 +419,24 @@ export async function tryAutoAssign(orderId, options = {}) {
       );
     } catch (err) {
       logger.warn(`Push notifications failed for batch: ${err.message}`);
+  if (voipToken) {
+    try {
+      await sendVoipPushNotification(
+        [voipToken],
+        {
+          title: '?? New Order Nearby!',
+          body: `Order #${order.order_id || order._id} is waiting. Be the first to accept!`,
+          sound: 'default',
+          type: 'new_order',
+          data: { type: 'new_order', orderId: order._id.toString() },
+        },
+        { ownerType: 'DELIVERY_PARTNER' }
+      );
+    } catch (error) {
+      logger.warn(`VoIP resend failed for order ${order._id} - ${error?.message || error}`);
+    }
+  }
+
     }
 
     // Record or refresh offers for every rider notified in this attempt.
@@ -511,7 +530,7 @@ export async function processDispatchTimeout(orderId, partnerId, options = {}) {
 }
 
 
-async function resendDeliveryNotificationForOrder(order) {
+async function resendDeliveryNotificationForOrder(order, options = {}) {
   const activeStatuses = ['confirmed', 'preparing', 'ready_for_pickup'];
   if (!activeStatuses.includes(order.orderStatus)) {
     throw new ValidationError(`Cannot resend notification for order in status: ${order.orderStatus}`);
@@ -539,6 +558,7 @@ async function resendDeliveryNotificationForOrder(order) {
   const shortlistedCount = Array.isArray(preview?.partners) ? preview.partners.length : 0;
 
   await clearDeliveryOffersForOrder(order, { includeAssignedPartner: true });
+  const voipToken = String(options?.voipToken || '').trim();
   await resetDispatchForFreshHunt(order._id);
 
   let dispatchResult = await tryAutoAssign(order._id, {
@@ -596,7 +616,7 @@ async function resendDeliveryNotificationForOrder(order) {
   };
 }
 
-export async function resendDeliveryNotificationRestaurant(orderId, restaurantId) {
+export async function resendDeliveryNotificationRestaurant(orderId, restaurantId, options = {}) {
   const identity = buildOrderIdentityFilter(orderId);
   const order = await FoodOrder.findOne({
     ...identity,
@@ -604,14 +624,14 @@ export async function resendDeliveryNotificationRestaurant(orderId, restaurantId
   });
 
   if (!order) throw new NotFoundError('Order not found');
-  return resendDeliveryNotificationForOrder(order);
+  return resendDeliveryNotificationForOrder(order, options);
 }
 
-export async function resendDeliveryNotificationAdmin(orderId) {
+export async function resendDeliveryNotificationAdmin(orderId, options = {}) {
   const identity = buildOrderIdentityFilter(orderId);
   const order = await FoodOrder.findOne(identity);
   if (!order) throw new NotFoundError('Order not found');
-  return resendDeliveryNotificationForOrder(order);
+  return resendDeliveryNotificationForOrder(order, options);
 }
 
 /** Cancel any queued dispatch timeout job for an order. */
