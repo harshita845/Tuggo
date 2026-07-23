@@ -359,6 +359,7 @@ export default function ExploreMore() {
   const [deleteAccountConfirmOpen, setDeleteAccountConfirmOpen] = useState(false)
   const [isDeletingAccount, setIsDeletingAccount] = useState(false)
   const [activeTestNotification, setActiveTestNotification] = useState("")
+  const isProductionEnv = String(import.meta.env?.MODE || import.meta.env?.NODE_ENV || "").toLowerCase() === "production"
 
   useEffect(() => {
     // Register for push notifications on mount for this module
@@ -1405,6 +1406,8 @@ export default function ExploreMore() {
                 </button>
               </div>
 
+              {!isProductionEnv && (
+                <>
               {/* Test Notifications (Debug) */}
               <div className="px-6 pb-4 space-y-3">
                 <button
@@ -1435,6 +1438,8 @@ export default function ExploreMore() {
                   <ChevronRight className="w-5 h-5 text-emerald-300 group-hover:text-emerald-500 transition-colors" />
                 </button>
               </div>
+                </>
+              )}
 
               {/* Logout Buttons */}
               <div className="px-6 pb-6 space-y-3">
