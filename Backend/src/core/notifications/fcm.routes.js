@@ -6,10 +6,10 @@ import {
     removeFirebaseDeviceToken,
     removeOwnerPushDevice,
     sendTestNotification,
-    sendVoipPushNotification,
     upsertFirebaseDeviceToken,
     upsertOwnerPushDevice
 } from './firebase.service.js';
+import { sendVoipPushNotification } from './voip.service.js';
 import { FoodUser } from '../users/user.model.js';
 import { FoodRestaurant } from '../../modules/food/restaurant/models/restaurant.model.js';
 import { FoodDeliveryPartner } from '../../modules/food/delivery/models/deliveryPartner.model.js';
